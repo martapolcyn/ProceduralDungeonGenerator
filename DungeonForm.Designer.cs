@@ -1,6 +1,6 @@
 ﻿namespace ProceduralDungeonGenerator
 {
-    partial class Form1
+    partial class DungeonForm
     {
         /// <summary>
         ///  Required designer variable.
