@@ -13,6 +13,8 @@ namespace ProceduralDungeonGenerator.Configuration
         public int MaxCount { get; set; }
         public RoomSize Size { get; set; }
         public RoomShape Shape { get; set; }
+        public int MinEnemies { get; set; }
+        public int MaxEnemies { get; set; }
 
         public static List<RoomConfig> LoadFromCsv(string path)
         {
@@ -30,7 +32,7 @@ namespace ProceduralDungeonGenerator.Configuration
 
                 var parts = line.Split(',');
 
-                if (parts.Length != 6)
+                if (parts.Length != 8)
                     throw new FormatException($"Nieprawidłowa liczba kolumn w wierszu: {line}");
 
                 try
@@ -42,7 +44,9 @@ namespace ProceduralDungeonGenerator.Configuration
                         MinCount = int.Parse(parts[2].Trim()),
                         MaxCount = int.Parse(parts[3].Trim()),
                         Size = Enum.Parse<RoomSize>(parts[4].Trim(), true),
-                        Shape = Enum.Parse<RoomShape>(parts[5].Trim(), true)
+                        Shape = Enum.Parse<RoomShape>(parts[5].Trim(), true),
+                        MinEnemies = int.Parse(parts[6].Trim()),
+                        MaxEnemies = int.Parse(parts[7].Trim())
                     };
 
                     roomConfigs.Add(config);
@@ -55,6 +59,5 @@ namespace ProceduralDungeonGenerator.Configuration
 
             return roomConfigs;
         }
-
     }
 }

@@ -36,6 +36,8 @@ namespace ProceduralDungeonGenerator
         public RoomType Type { get; private set; }
         public RoomSize Size { get; private set; }
 
+        public List<Enemy> Enemies { get; private set; } = new();
+
         public Room(int x, int y, RoomSize size, RoomShape shape, RoomType type)
         {
             X = x;
@@ -44,6 +46,12 @@ namespace ProceduralDungeonGenerator
             Shape = shape;
             Type = type;
             (Width, Height) = GetRoomSize(size);
+        }
+
+        // Assign enememy
+        public void AssignEnemy(Enemy enemy)
+        {
+            Enemies.Add(enemy);
         }
 
         // Room width and height based on room size and dungeon size
@@ -67,6 +75,7 @@ namespace ProceduralDungeonGenerator
             }
         }
 
+        // Get center of the room
         public Point Center()
         {
             int centerX = X + Width / 2;
@@ -75,6 +84,7 @@ namespace ProceduralDungeonGenerator
         }
 
         // Draw room based on shape
+        // TODO: implement irregularly shaped room
         public void Draw(Graphics g)
         {
             Brush brush = GetBrushForRoomType();
@@ -135,8 +145,11 @@ namespace ProceduralDungeonGenerator
 
         public override string ToString()
         {
-            return $"Room: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}";
-        }
+            string enemySummary = Enemies.Count == 0
+                ? "None"
+                : string.Join(", ", Enemies.Select(e => e.Type.ToString()));
 
+            return $"Room: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}, Enemies({Enemies.Count}): [{enemySummary}]";
+        }
     }
 }
