@@ -1,4 +1,4 @@
-﻿namespace ProceduralDungeonGenerator
+﻿namespace ProceduralDungeonGenerator.Model
 {
     public enum EnemyType
     {

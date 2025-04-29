@@ -4,7 +4,7 @@ using System.Configuration.Internal;
 using System.Drawing;
 using ProceduralDungeonGenerator.Configuration;
 
-namespace ProceduralDungeonGenerator
+namespace ProceduralDungeonGenerator.Model
 {
     public class Dungeon
     {
