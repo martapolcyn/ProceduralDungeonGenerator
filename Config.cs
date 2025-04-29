@@ -17,11 +17,13 @@ namespace ProceduralDungeonGenerator
         // configuration from files
         public static List<RoomConfig> RoomConfigs { get; private set; } = new List<RoomConfig>();
         public static List<EnemyConfig> EnemyConfigs { get; private set; } = new List<EnemyConfig>();
+        public static List<ArtifactConfig> ArtifactConfigs { get; private set; } = new List<ArtifactConfig>();
 
         public static void LoadAllConfigs()
         {
             RoomConfigs = RoomConfig.LoadFromCsv(@"Resources\config_room.csv");
             EnemyConfigs = EnemyConfig.LoadFromCsv(@"Resources\config_enemy.csv");
+            ArtifactConfigs = ArtifactConfig.LoadFromCsv(@"Resources\config_artifact.csv");
         }
     }
 }

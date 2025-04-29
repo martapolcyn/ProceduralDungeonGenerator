@@ -11,6 +11,7 @@ namespace ProceduralDungeonGenerator.Model
         public List<Room> rooms { get; private set; }
         public List<Corridor> corridors { get; private set; }
         private List<EnemyType> weightedEnemyTypes = new();
+        private List<ArtifactName> weightedArtifactNames = new();
 
 
         private Random rand = new Random();
@@ -24,6 +25,7 @@ namespace ProceduralDungeonGenerator.Model
         public void GenerateDungeon()
         {
             InitializeWeightedEnemyList();
+            InitializeWeightedArtifactList();
             GenerateRooms();
             GenerateCorridors();
         }
@@ -161,6 +163,15 @@ namespace ProceduralDungeonGenerator.Model
                 room.AssignEnemy(enemy);
             }
 
+            // Random count of artifacts for this room
+            int artifactCount = rand.Next(rConfig.MinArtifacts, rConfig.MaxArtifacts + 1);
+            for (int i = 0; i < artifactCount; i++)
+            {
+                var artifactName = GetRandomArtifactName();
+                var artifact = new Artifact(artifactName);
+                room.AssignArtifact(artifact);
+            }
+
             return room;
         }
 
@@ -169,6 +180,13 @@ namespace ProceduralDungeonGenerator.Model
         {
             int index = rand.Next(weightedEnemyTypes.Count);
             return weightedEnemyTypes[index];
+        }
+
+        // Choose random artifact name based on weighted list
+        private ArtifactName GetRandomArtifactName()
+        {
+            int index = rand.Next(weightedArtifactNames.Count);
+            return weightedArtifactNames[index];
         }
 
         // Initialize weighted enemy list
@@ -189,6 +207,28 @@ namespace ProceduralDungeonGenerator.Model
                 Logger.Log("[WARNING] weightedEnemyTypes list is empty – missing enemy configuration?");
             }
         }
+
+
+        // Initialize weighted artifact list
+        private void InitializeWeightedArtifactList()
+        {
+            weightedArtifactNames = new List<ArtifactName>();
+
+            foreach (var config in Config.ArtifactConfigs)
+            {
+                for (int i = 0; i < config.Weight; i++)
+                {
+                    weightedArtifactNames.Add(config.Name);
+                }
+            }
+
+            if (weightedArtifactNames.Count == 0)
+            {
+                Logger.Log("[WARNING] weightedArtifactNames list is empty – missing artifact configuration?");
+            }
+        }
+
+
 
         // Draw dungeon
         public void Draw(Graphics g)

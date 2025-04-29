@@ -37,6 +37,7 @@ namespace ProceduralDungeonGenerator.Model
         public RoomSize Size { get; private set; }
 
         public List<Enemy> Enemies { get; private set; } = new();
+        public List<Artifact> Artifacts { get; private set; } = new();
 
         public Room(int x, int y, RoomSize size, RoomShape shape, RoomType type)
         {
@@ -52,6 +53,12 @@ namespace ProceduralDungeonGenerator.Model
         public void AssignEnemy(Enemy enemy)
         {
             Enemies.Add(enemy);
+        }
+
+        // Assign artifact
+        public void AssignArtifact(Artifact artifact)
+        {
+            Artifacts.Add(artifact);
         }
 
         // Room width and height based on room size and dungeon size
@@ -149,7 +156,13 @@ namespace ProceduralDungeonGenerator.Model
                 ? "None"
                 : string.Join(", ", Enemies.Select(e => e.Type.ToString()));
 
-            return $"Room: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}, Enemies({Enemies.Count}): [{enemySummary}]";
+            string artifactSummary = Artifacts.Count == 0
+                ? "None"
+                : string.Join(", ", Artifacts.Select(e => e.Name.ToString()));
+
+            return $"Room: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}, " +
+                $"Enemies({Enemies.Count}): [{enemySummary}], " +
+                $"Artrifacts({Artifacts.Count}): [{artifactSummary}]";
         }
     }
 }
