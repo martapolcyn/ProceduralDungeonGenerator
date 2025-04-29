@@ -21,35 +21,50 @@ namespace ProceduralDungeonGenerator
         {
             rooms.Clear();
 
+            // for each type of the room
             foreach (var config in Config.RoomConfigs)
             {
+                // pick random count of rooms within min and max and create them
                 int roomCount = rand.Next(config.MinCount, config.MaxCount + 1);
 
                 for (int i = 0; i < roomCount; i++)
                 {
-                    Room newRoom;
-                    bool collision;
+                    int attempts = 0;
+                    const int maxAttempts = 100;
 
-                    do
+                    while (attempts < maxAttempts)
                     {
-                        collision = false;
-                        newRoom = CreateRoom(config);
+                        var newRoom = CreateRoom(config);
+                        attempts++;
 
-                        foreach (var existingRoom in rooms)
+                        // Add the room no matter what if this is the very last attempt
+                        if (attempts == maxAttempts)
                         {
-                            if (newRoom.Intersects(existingRoom))
-                            {
-                                collision = true;
-                                break;
-                            }
+                            rooms.Add(newRoom); 
+                            System.Diagnostics.Debug.WriteLine($"[WARNING] Created despite collision: {newRoom}");
+                            break;
                         }
-                    }
-                    while (collision);
 
-                    rooms.Add(newRoom);
+                        // Check if the room fits the dungeon
+                        if (!newRoom.IsWithinBounds())
+                            continue;
+
+                        // Check if the room does not collide with other rooms
+                        bool collision = rooms.Any(existing => newRoom.Intersects(existing));
+                        if (!collision)
+                        {
+                            rooms.Add(newRoom);
+                            System.Diagnostics.Debug.WriteLine($"Created: {newRoom}");
+                            break;
+                        }
+
+                    }
+
                 }
             }
         }
+
+
 
         private Room CreateRoom(RoomConfig config)
         {
