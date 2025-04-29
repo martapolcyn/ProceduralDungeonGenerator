@@ -121,15 +121,9 @@ namespace ProceduralDungeonGenerator.Model
                 var a = rooms[roomAIndex];
                 var b = rooms[roomBIndex];
 
-                var start = a.Center();
-                var end = b.Center();
+                corridors.Add(new Corridor(a, b));
 
-                var mid = new Point(end.X, start.Y);
-
-                corridors.Add(new Corridor(start, mid));
-                corridors.Add(new Corridor(mid, end));
-
-                Logger.Log($"Created corridor: {start} -> {mid} -> {end}");
+                Logger.Log($"Created corridor: {corridors.Last().ToString()}");
 
                 // Mark rooms as connected
                 visitedRooms.Add(roomBIndex);
@@ -233,14 +227,13 @@ namespace ProceduralDungeonGenerator.Model
         // Draw dungeon
         public void Draw(Graphics g)
         {
-            foreach (var room in rooms)
-            {
-                room.Draw(g);
-            }
-
             foreach (var corridor in corridors)
             {
                 corridor.Draw(g);
+            }
+            foreach (var room in rooms)
+            {
+                room.Draw(g);
             }
         }
     }
