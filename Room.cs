@@ -1,24 +1,119 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
 
 namespace ProceduralDungeonGenerator
 {
-    internal class Room
+    public enum RoomShape
     {
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
+        Rectangle,
+        Circle,
+        Custom
+    }
 
-        public Room(int x, int y, int width, int height)
+    public enum RoomType
+    {
+        Entrance,
+        KingChamber,
+        Treasury,
+        Normal,
+        Exit
+    }
+
+    public enum RoomSize
+    {
+        Small,
+        Medium,
+        Big
+    }
+
+    public class Room
+    {
+        public int X { get; private set; }
+        public int Y { get; private set; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+        public RoomShape Shape { get; private set; }
+        public RoomType Type { get; private set; }
+        public RoomSize Size { get; private set; }
+
+        public Room(int x, int y, RoomSize size, RoomShape shape, RoomType type)
         {
             X = x;
             Y = y;
-            Width = width;
-            Height = height;
+            Size = size;
+            Shape = shape;
+            Type = type;
+            (Width, Height) = GetRoomSize(size);
+        }
+
+        // Room width and height based on room size and dungeon size
+        private (int, int) GetRoomSize(RoomSize size)
+        {
+            Random rand = new Random();
+
+            int w = Config.dungeonWidth;
+            int h = Config.dungeonHeight;
+
+            switch (size)
+            {
+                case RoomSize.Small:
+                    return (rand.Next(w/20, w/16), rand.Next(h/20, h/12));
+                case RoomSize.Medium:
+                    return (rand.Next(w/16, w/8), rand.Next(h/12, h/6));
+                case RoomSize.Big:
+                    return (rand.Next(w/8, w/5), rand.Next(h/6, h/4));
+                default:
+                    return (w/16, w/12);
+            }
+        }
+
+        // Draw room based on shape
+        public void Draw(Graphics g)
+        {
+            Brush brush = GetBrushForRoomType();
+
+            switch (Shape)
+            {
+                case RoomShape.Rectangle:
+                    g.FillRectangle(brush, X, Y, Width, Height);
+                    break;
+                case RoomShape.Circle:
+                    g.FillEllipse(brush, X, Y, Width, Height);
+                    break;
+                case RoomShape.Custom:
+                    // TODO: implement irregularly shaped room
+                    g.FillRectangle(brush, X, Y, Width, Height);
+                    break;
+            }
+        }
+
+        // Room colour based on type
+        private Brush GetBrushForRoomType()
+        {
+            switch (Type)
+            {
+                case RoomType.Entrance:
+                    return Brushes.Green;
+                case RoomType.KingChamber:
+                    return Brushes.Red;
+                case RoomType.Treasury:
+                    return Brushes.Gold;
+                case RoomType.Normal:
+                    return Brushes.Gray;
+                case RoomType.Exit:
+                    return Brushes.Blue;
+                default:
+                    return Brushes.White;
+            }
+        }
+
+        // Sprawdzanie, czy dwa pokoje się nakładają
+        public bool Intersects(Room other)
+        {
+            return X < other.X + other.Width &&
+                   X + Width > other.X &&
+                   Y < other.Y + other.Height &&
+                   Y + Height > other.Y;
         }
     }
 }

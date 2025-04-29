@@ -1,31 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Configuration.Internal;
+using System.Drawing;
+using ProceduralDungeonGenerator.Configuration;
 
 namespace ProceduralDungeonGenerator
 {
-    internal class Dungeon
+    public class Dungeon
     {
-        public List<Room> Rooms { get; set; }
+        public List<Room> rooms { get; private set; }
+        private Random rand = new Random();
 
         public Dungeon()
         {
-            Rooms = new List<Room>();
+            rooms = new List<Room>();
         }
 
-        public void GenerateDungeon(int numberOfRooms)
-        {
-            Random rand = new Random();
-            for (int i = 0; i < numberOfRooms; i++)
-            {
-                int width = rand.Next(50, 100);
-                int height = rand.Next(50, 100);
-                int x = rand.Next(0, 800 - width);
-                int y = rand.Next(0, 600 - height);
 
-                Rooms.Add(new Room(x, y, width, height));
+        public void GenerateDungeon()
+        {
+            rooms.Clear();
+
+            foreach (var config in Config.RoomConfigs)
+            {
+                int roomCount = rand.Next(config.MinCount, config.MaxCount + 1);
+
+                for (int i = 0; i < roomCount; i++)
+                {
+                    Room newRoom;
+                    bool collision;
+
+                    do
+                    {
+                        collision = false;
+                        newRoom = CreateRoom(config);
+
+                        foreach (var existingRoom in rooms)
+                        {
+                            if (newRoom.Intersects(existingRoom))
+                            {
+                                collision = true;
+                                break;
+                            }
+                        }
+                    }
+                    while (collision);
+
+                    rooms.Add(newRoom);
+                }
+            }
+        }
+
+        private Room CreateRoom(RoomConfig config)
+        {
+            // Position the room randomly
+            int x = rand.Next(0, Config.dungeonWidth);
+            int y = rand.Next(0, Config.dungeonHeight);
+
+            // Create the room based on configuration
+            return new Room(x, y, config.Size, config.Shape, config.Type);
+        }
+
+        // Draw room
+        public void Draw(Graphics g)
+        {
+            foreach (var room in rooms)
+            {
+                room.Draw(g);
             }
         }
     }
