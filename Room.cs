@@ -88,6 +88,7 @@ namespace ProceduralDungeonGenerator
         }
 
         // Room colour based on type
+        // TODO: define tiles with patterns instead
         private Brush GetBrushForRoomType()
         {
             switch (Type)
@@ -107,7 +108,7 @@ namespace ProceduralDungeonGenerator
             }
         }
 
-        // Sprawdzanie, czy dwa pokoje się nakładają
+        // Check intersection with other rooms
         public bool Intersects(Room other)
         {
             return X < other.X + other.Width &&
@@ -115,5 +116,20 @@ namespace ProceduralDungeonGenerator
                    Y < other.Y + other.Height &&
                    Y + Height > other.Y;
         }
+
+        // Check if the room fits the dungeon size
+        public bool IsWithinBounds(int margin = 10)
+        {
+            return X >= margin &&
+                   Y >= margin &&
+                   (X + Width + margin) <= Config.dungeonWidth &&
+                   (Y + Height + margin) <= Config.dungeonHeight;
+        }
+
+        public override string ToString()
+        {
+            return $"Room: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}";
+        }
+
     }
 }
