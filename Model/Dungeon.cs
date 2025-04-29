@@ -77,56 +77,101 @@ namespace ProceduralDungeonGenerator.Model
 
         private void GenerateCorridors()
         {
-            corridors.Clear();
+            var allCorridors = new List<Corridor>();
 
-            // Visited rooms list
-            var visitedRooms = new HashSet<int>();
+            // Pick rooms that are neither entrance nor exit
+            var nonEndCapRooms = rooms
+                .Where(r => r.Type != RoomType.Entrance && r.Type != RoomType.Exit)
+                .ToList();
 
-            // First room
-            visitedRooms.Add(0);
-
-            // While there are unconnected rooms
-            while (visitedRooms.Count < rooms.Count)
+            // Create all possible corridors
+            for (int i = 0; i < nonEndCapRooms.Count; i++)
             {
-                double minDistance = double.MaxValue;
-                int roomAIndex = -1, roomBIndex = -1;
-
-                // Search for two nearest unconnected rooms
-                for (int i = 0; i < rooms.Count; i++)
+                for (int j = i + 1; j < nonEndCapRooms.Count; j++)
                 {
-                    if (!visitedRooms.Contains(i))
-                        continue;
-
-                    for (int j = 0; j < rooms.Count; j++)
-                    {
-                        if (i == j || visitedRooms.Contains(j))
-                            continue;
-
-                        var roomA = rooms[i];
-                        var roomB = rooms[j];
-
-                        // Calculate distance between rooms
-                        var distance = CalculateDistance(roomA, roomB);
-
-                        if (distance < minDistance)
-                        {
-                            minDistance = distance;
-                            roomAIndex = i;
-                            roomBIndex = j;
-                        }
-                    }
+                    allCorridors.Add(new Corridor(nonEndCapRooms[i], nonEndCapRooms[j]));
                 }
+            }
 
-                // Create corridor
-                var a = rooms[roomAIndex];
-                var b = rooms[roomBIndex];
+            // Shortest paths
+            allCorridors.Sort((a, b) => a.Distance.CompareTo(b.Distance));
 
-                corridors.Add(new Corridor(a, b));
+            // Connect Endcap rooms
+            ConnectEndCapRoomsFirst(allCorridors);
 
-                Logger.Log($"Created corridor: {corridors.Last().ToString()}");
+            // MinumumSpanningTree
+            RunMST(allCorridors);
+        }
 
-                // Mark rooms as connected
-                visitedRooms.Add(roomBIndex);
+        // Connects entrances and exits to nearest normal room
+        private void ConnectEndCapRoomsFirst(List<Corridor> allCorridors)
+        {
+            var endCapRooms = rooms.Where(r => r.Type is RoomType.Entrance or RoomType.Exit).ToList();
+            var normalRooms = rooms.Where(r => r.Type == RoomType.Normal).ToList();
+
+            foreach (var endRoom in endCapRooms)
+            {
+                Room? closest = FindClosestRoom(endRoom, normalRooms);
+                if (closest != null && !IsCorridorExists(endRoom, closest))
+                {
+                    var corridor = new Corridor(endRoom, closest);
+                    corridors.Add(corridor);
+                    // Remove the corridors for the MST algorithm
+                    allCorridors.RemoveAll(c => c.Connects(endRoom, closest)); 
+                    Logger.Log($"[EndCap] Room No. {endRoom.ID} ({endRoom.Type}) -> {closest.ID} ({closest.Type})");
+                }
+            }
+        }
+
+        // find the closest room to another room
+        private Room? FindClosestRoom(Room from, IEnumerable<Room> candidates)
+        {
+            Room? closest = null;
+            double minDistance = double.MaxValue;
+
+            foreach (var room in candidates)
+            {
+                double distance = CalculateDistance(from, room);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closest = room;
+                }
+            }
+
+            return closest;
+        }
+
+        // check if corridor exists already
+        private bool IsCorridorExists(Room a, Room b)
+        {
+            return corridors.Any(c =>
+                (c.StartRoom == a && c.EndRoom == b) ||
+                (c.StartRoom == b && c.EndRoom == a));
+        }
+
+        // Minimum Spanning Tree algorithm
+        private void RunMST(List<Corridor> candidateCorridors)
+        {
+            var disjointSet = new DisjointSet();
+            disjointSet.MakeSet(rooms);
+
+            foreach (var corridor in corridors) // already existing
+            {
+                disjointSet.Union(corridor.StartRoom, corridor.EndRoom);
+            }
+
+            foreach (var corridor in candidateCorridors)
+            {
+                var a = corridor.StartRoom;
+                var b = corridor.EndRoom;
+
+                if (!disjointSet.Connected(a, b))
+                {
+                    disjointSet.Union(a, b);
+                    corridors.Add(corridor);
+                    Logger.Log($"[Inner] Room No. {a.ID} ({a.Type}) <--> {b.ID} ({b.Type})");
+                }
             }
         }
 
@@ -202,7 +247,6 @@ namespace ProceduralDungeonGenerator.Model
             }
         }
 
-
         // Initialize weighted artifact list
         private void InitializeWeightedArtifactList()
         {
@@ -222,8 +266,6 @@ namespace ProceduralDungeonGenerator.Model
             }
         }
 
-
-
         // Draw dungeon
         public void Draw(Graphics g)
         {
@@ -236,5 +278,37 @@ namespace ProceduralDungeonGenerator.Model
                 room.Draw(g);
             }
         }
+
+        private class DisjointSet
+        {
+            private Dictionary<Room, Room> parent = new();
+
+            public void MakeSet(IEnumerable<Room> rooms)
+            {
+                foreach (var room in rooms)
+                    parent[room] = room;
+            }
+
+            public Room Find(Room r)
+            {
+                if (parent[r] != r)
+                    parent[r] = Find(parent[r]);
+                return parent[r];
+            }
+
+            public void Union(Room a, Room b)
+            {
+                var rootA = Find(a);
+                var rootB = Find(b);
+                if (rootA != rootB)
+                    parent[rootB] = rootA;
+            }
+
+            public bool Connected(Room a, Room b)
+            {
+                return Find(a) == Find(b);
+            }
+        }
+
     }
 }
