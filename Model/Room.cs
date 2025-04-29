@@ -118,13 +118,12 @@ namespace ProceduralDungeonGenerator.Model
             using (var textBrush = new SolidBrush(Color.Black))
             {
                 string id = RoomID.ToString();
-                // Obliczenie pozycji tekstu (RoomID) w centrum pokoju
+                
                 float textWidth = g.MeasureString(id, font).Width;
                 float textHeight = g.MeasureString(id, font).Height;
                 float textX = X + (Width / 2) - (textWidth / 2);
                 float textY = Y + (Height / 2) - (textHeight / 2);
 
-                // Rysowanie tekstu
                 g.DrawString(id, font, textBrush, textX, textY);
             }
         }
