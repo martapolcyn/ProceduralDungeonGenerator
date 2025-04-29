@@ -10,6 +10,8 @@ namespace ProceduralDungeonGenerator
     {
         public List<Room> rooms { get; private set; }
         public List<Corridor> corridors { get; private set; }
+        private List<EnemyType> weightedEnemyTypes = new();
+
 
         private Random rand = new Random();
 
@@ -19,13 +21,12 @@ namespace ProceduralDungeonGenerator
             corridors = new List<Corridor>();
         }
 
-
         public void GenerateDungeon()
         {
+            InitializeWeightedEnemyList();
             GenerateRooms();
             GenerateCorridors();
         }
-
 
         private void GenerateRooms()
         {
@@ -143,14 +144,50 @@ namespace ProceduralDungeonGenerator
         }
 
         // Create room
-        private Room CreateRoom(RoomConfig config)
+        private Room CreateRoom(RoomConfig rConfig)
         {
             // Position the room randomly
             int x = rand.Next(0, Config.dungeonWidth);
             int y = rand.Next(0, Config.dungeonHeight);
 
-            // Create the room based on configuration
-            return new Room(x, y, config.Size, config.Shape, config.Type);
+            var room = new Room(x, y, rConfig.Size, rConfig.Shape, rConfig.Type);
+
+            // Random count of enemies for this room
+            int enemyCount = rand.Next(rConfig.MinEnemies, rConfig.MaxEnemies + 1);
+            for (int i = 0; i < enemyCount; i++)
+            {
+                var enemyType = GetRandomEnemyType();
+                var enemy = new Enemy(enemyType);
+                room.AssignEnemy(enemy);
+            }
+
+            return room;
+        }
+
+        // Choose random enemy type based on weighted list
+        private EnemyType GetRandomEnemyType()
+        {
+            int index = rand.Next(weightedEnemyTypes.Count);
+            return weightedEnemyTypes[index];
+        }
+
+        // Initialize weighted enemy list
+        private void InitializeWeightedEnemyList()
+        {
+            weightedEnemyTypes = new List<EnemyType>();
+
+            foreach (var config in Config.EnemyConfigs)
+            {
+                for (int i = 0; i < config.Weight; i++)
+                {
+                    weightedEnemyTypes.Add(config.Type);
+                }
+            }
+
+            if (weightedEnemyTypes.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("[WARNING] Lista weightedEnemyTypes jest pusta – brak dostępnych konfiguracji wrogów?");
+            }
         }
 
         // Draw dungeon
