@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace ProceduralDungeonGenerator.Model
 {
@@ -109,9 +110,13 @@ namespace ProceduralDungeonGenerator.Model
                     g.FillEllipse(brush, X, Y, Width, Height);
                     break;
                 case RoomShape.Custom:
-                    // TODO: implement irregularly shaped room
-                    g.FillRectangle(brush, X, Y, Width, Height);
-                    break;
+                    {
+                        using GraphicsPath path = new();
+                        var points = GenerateIrregularPolygon(X, Y, Width, Height);
+                        path.AddPolygon(points);
+                        g.FillPath(brush, path);
+                        break;
+                    }
             }
 
             using (var font = new Font("Arial", 12))
@@ -147,6 +152,30 @@ namespace ProceduralDungeonGenerator.Model
                 default:
                     return Brushes.White;
             }
+        }
+
+        // Custom room shape
+        private Point[] GenerateIrregularPolygon(int x, int y, int width, int height)
+        {
+            Random rand = new Random(ID);
+            int pointCount = rand.Next(5, 9); // vertices
+
+            List<Point> points = new();
+            double angleStep = 2 * Math.PI / pointCount;
+
+            for (int i = 0; i < pointCount; i++)
+            {
+                double angle = i * angleStep;
+                double radiusX = width / 2 * (0.7 + rand.NextDouble() * 0.6);  // 70% - 130% radius
+                double radiusY = height / 2 * (0.7 + rand.NextDouble() * 0.6);
+
+                int px = x + width / 2 + (int)(Math.Cos(angle) * radiusX);
+                int py = y + height / 2 + (int)(Math.Sin(angle) * radiusY);
+
+                points.Add(new Point(px, py));
+            }
+
+            return points.ToArray();
         }
 
         // Check intersection with other rooms
