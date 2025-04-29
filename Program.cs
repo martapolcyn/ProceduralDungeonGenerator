@@ -1,4 +1,5 @@
 using Microsoft.VisualBasic.ApplicationServices;
+using ProceduralDungeonGenerator.Model;
 using System.Resources;
 
 namespace ProceduralDungeonGenerator

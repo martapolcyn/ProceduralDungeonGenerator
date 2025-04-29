@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace ProceduralDungeonGenerator
+namespace ProceduralDungeonGenerator.Model
 {
     public enum RoomShape
     {
@@ -139,8 +139,8 @@ namespace ProceduralDungeonGenerator
         {
             return X >= margin &&
                    Y >= margin &&
-                   (X + Width + margin) <= Config.dungeonWidth &&
-                   (Y + Height + margin) <= Config.dungeonHeight;
+                   X + Width + margin <= Config.dungeonWidth &&
+                   Y + Height + margin <= Config.dungeonHeight;
         }
 
         public override string ToString()
