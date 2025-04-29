@@ -29,7 +29,7 @@ namespace ProceduralDungeonGenerator.Model
     public class Room
     {
         private static int _idCounter = 0;
-        public int RoomID { get; private set; }
+        public int ID { get; private set; }
 
         public int X { get; private set; }
         public int Y { get; private set; }
@@ -44,7 +44,7 @@ namespace ProceduralDungeonGenerator.Model
 
         public Room(int x, int y, RoomSize size, RoomShape shape, RoomType type)
         {
-            RoomID = ++_idCounter;
+            ID = ++_idCounter;
             X = x;
             Y = y;
             Size = size;
@@ -117,7 +117,7 @@ namespace ProceduralDungeonGenerator.Model
             using (var font = new Font("Arial", 12))
             using (var textBrush = new SolidBrush(Color.Black))
             {
-                string id = RoomID.ToString();
+                string id = ID.ToString();
                 
                 float textWidth = g.MeasureString(id, font).Width;
                 float textHeight = g.MeasureString(id, font).Height;
@@ -177,7 +177,7 @@ namespace ProceduralDungeonGenerator.Model
                 ? "None"
                 : string.Join(", ", Artifacts.Select(e => e.Name.ToString()));
 
-            return $"Room {RoomID}: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}, " +
+            return $"Room {ID}: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}, " +
                 $"Enemies({Enemies.Count}): [{enemySummary}], " +
                 $"Artrifacts({Artifacts.Count}): [{artifactSummary}]";
         }
