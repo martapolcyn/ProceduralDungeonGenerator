@@ -67,6 +67,13 @@ namespace ProceduralDungeonGenerator
             }
         }
 
+        public Point Center()
+        {
+            int centerX = X + Width / 2;
+            int centerY = Y + Height / 2;
+            return new Point(centerX, centerY);
+        }
+
         // Draw room based on shape
         public void Draw(Graphics g)
         {

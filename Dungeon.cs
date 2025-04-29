@@ -9,15 +9,25 @@ namespace ProceduralDungeonGenerator
     public class Dungeon
     {
         public List<Room> rooms { get; private set; }
+        public List<Corridor> corridors { get; private set; }
+
         private Random rand = new Random();
 
         public Dungeon()
         {
             rooms = new List<Room>();
+            corridors = new List<Corridor>();
         }
 
 
         public void GenerateDungeon()
+        {
+            GenerateRooms();
+            GenerateCorridors();
+        }
+
+
+        private void GenerateRooms()
         {
             rooms.Clear();
 
@@ -40,7 +50,7 @@ namespace ProceduralDungeonGenerator
                         // Add the room no matter what if this is the very last attempt
                         if (attempts == maxAttempts)
                         {
-                            rooms.Add(newRoom); 
+                            rooms.Add(newRoom);
                             System.Diagnostics.Debug.WriteLine($"[WARNING] Created despite collision: {newRoom}");
                             break;
                         }
@@ -57,15 +67,82 @@ namespace ProceduralDungeonGenerator
                             System.Diagnostics.Debug.WriteLine($"Created: {newRoom}");
                             break;
                         }
-
                     }
-
                 }
             }
         }
 
+        private void GenerateCorridors()
+        {
+            corridors.Clear();
 
+            // Lista odwiedzonych pokoi
+            var visitedRooms = new HashSet<int>();
 
+            // Zaczynamy od pierwszego pokoju
+            visitedRooms.Add(0);
+
+            // Dopóki nie połączymy wszystkich pokoi
+            while (visitedRooms.Count < rooms.Count)
+            {
+                double minDistance = double.MaxValue;
+                int roomAIndex = -1, roomBIndex = -1;
+
+                // Szukamy najbliższej pary pokoi, które nie zostały jeszcze połączone
+                for (int i = 0; i < rooms.Count; i++)
+                {
+                    if (!visitedRooms.Contains(i))
+                        continue;
+
+                    for (int j = 0; j < rooms.Count; j++)
+                    {
+                        if (i == j || visitedRooms.Contains(j))
+                            continue;
+
+                        var roomA = rooms[i];
+                        var roomB = rooms[j];
+
+                        // Obliczamy odległość między pokojami
+                        var distance = CalculateDistance(roomA, roomB);
+
+                        if (distance < minDistance)
+                        {
+                            minDistance = distance;
+                            roomAIndex = i;
+                            roomBIndex = j;
+                        }
+                    }
+                }
+
+                // Tworzymy korytarz między najbliższymi pokojami
+                var a = rooms[roomAIndex];
+                var b = rooms[roomBIndex];
+
+                var start = a.Center();
+                var end = b.Center();
+
+                var mid = new Point(end.X, start.Y);
+
+                corridors.Add(new Corridor(start, mid));
+                corridors.Add(new Corridor(mid, end));
+
+                System.Diagnostics.Debug.WriteLine($"Created corridor: {start} -> {mid} -> {end}");
+
+                // Oznaczamy pokoje jako połączone
+                visitedRooms.Add(roomBIndex);
+            }
+        }
+
+        // Calculate distance between two rooms 
+        private double CalculateDistance(Room roomA, Room roomB)
+        {
+            var centerA = roomA.Center();
+            var centerB = roomB.Center();
+
+            return Math.Sqrt(Math.Pow(centerB.X - centerA.X, 2) + Math.Pow(centerB.Y - centerA.Y, 2));
+        }
+
+        // Create room
         private Room CreateRoom(RoomConfig config)
         {
             // Position the room randomly
@@ -76,12 +153,17 @@ namespace ProceduralDungeonGenerator
             return new Room(x, y, config.Size, config.Shape, config.Type);
         }
 
-        // Draw room
+        // Draw dungeon
         public void Draw(Graphics g)
         {
             foreach (var room in rooms)
             {
                 room.Draw(g);
+            }
+
+            foreach (var corridor in corridors)
+            {
+                corridor.Draw(g);
             }
         }
     }
