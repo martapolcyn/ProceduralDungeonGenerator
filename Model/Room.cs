@@ -28,6 +28,9 @@ namespace ProceduralDungeonGenerator.Model
 
     public class Room
     {
+        private static int _idCounter = 0;
+        public int RoomID { get; private set; }
+
         public int X { get; private set; }
         public int Y { get; private set; }
         public int Width { get; private set; }
@@ -41,6 +44,7 @@ namespace ProceduralDungeonGenerator.Model
 
         public Room(int x, int y, RoomSize size, RoomShape shape, RoomType type)
         {
+            RoomID = ++_idCounter;
             X = x;
             Y = y;
             Size = size;
@@ -109,6 +113,20 @@ namespace ProceduralDungeonGenerator.Model
                     g.FillRectangle(brush, X, Y, Width, Height);
                     break;
             }
+
+            using (var font = new Font("Arial", 12))
+            using (var textBrush = new SolidBrush(Color.Black))
+            {
+                string id = RoomID.ToString();
+                // Obliczenie pozycji tekstu (RoomID) w centrum pokoju
+                float textWidth = g.MeasureString(id, font).Width;
+                float textHeight = g.MeasureString(id, font).Height;
+                float textX = X + (Width / 2) - (textWidth / 2);
+                float textY = Y + (Height / 2) - (textHeight / 2);
+
+                // Rysowanie tekstu
+                g.DrawString(id, font, textBrush, textX, textY);
+            }
         }
 
         // Room colour based on type
@@ -160,7 +178,7 @@ namespace ProceduralDungeonGenerator.Model
                 ? "None"
                 : string.Join(", ", Artifacts.Select(e => e.Name.ToString()));
 
-            return $"Room: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}, " +
+            return $"Room {RoomID}: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}, " +
                 $"Enemies({Enemies.Count}): [{enemySummary}], " +
                 $"Artrifacts({Artifacts.Count}): [{artifactSummary}]";
         }

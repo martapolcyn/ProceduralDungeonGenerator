@@ -8,24 +8,33 @@ namespace ProceduralDungeonGenerator.Model
 {
     public class Corridor
     {
-        public Point Start { get; }
-        public Point End { get; }
+        public Room StartRoom { get; }
+        public Room EndRoom { get; }
 
-        public Corridor(Point start, Point end)
+        public Corridor(Room startRoom, Room endRoom)
         {
-            Start = start;
-            End = end;
+            StartRoom = startRoom;
+            EndRoom = endRoom;
         }
+
+        public Point Start => StartRoom.Center();
+        public Point End => EndRoom.Center();
 
         public void Draw(Graphics g)
         {
+            var start = Start;
+            var end = End;
+            var mid = new Point(end.X, start.Y);
+
             using var pen = new Pen(Color.Gray, 4);
-            g.DrawLine(pen, Start, End);
+
+            g.DrawLine(pen, start, mid);
+            g.DrawLine(pen, mid, end);
         }
 
         public override string ToString()
         {
-            return $"Corridor: Start=({Start.X},{Start.Y}), End=({End.X},{End.Y})";
+            return $"Corridor: Start Room No. {StartRoom.RoomID}, End Room No. {EndRoom.RoomID}";
         }
     }
 
