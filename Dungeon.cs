@@ -52,7 +52,7 @@ namespace ProceduralDungeonGenerator
                         if (attempts == maxAttempts)
                         {
                             rooms.Add(newRoom);
-                            System.Diagnostics.Debug.WriteLine($"[WARNING] Created despite collision: {newRoom}");
+                            Logger.Log($"[WARNING] Created despite collision: {newRoom}");
                             break;
                         }
 
@@ -65,7 +65,7 @@ namespace ProceduralDungeonGenerator
                         if (!collision)
                         {
                             rooms.Add(newRoom);
-                            System.Diagnostics.Debug.WriteLine($"Created: {newRoom}");
+                            Logger.Log($"Created: {newRoom}");
                             break;
                         }
                     }
@@ -127,7 +127,7 @@ namespace ProceduralDungeonGenerator
                 corridors.Add(new Corridor(start, mid));
                 corridors.Add(new Corridor(mid, end));
 
-                System.Diagnostics.Debug.WriteLine($"Created corridor: {start} -> {mid} -> {end}");
+                Logger.Log($"Created corridor: {start} -> {mid} -> {end}");
 
                 // Mark rooms as connected
                 visitedRooms.Add(roomBIndex);
@@ -186,7 +186,7 @@ namespace ProceduralDungeonGenerator
 
             if (weightedEnemyTypes.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine("[WARNING] Lista weightedEnemyTypes jest pusta – brak dostępnych konfiguracji wrogów?");
+                Logger.Log("[WARNING] weightedEnemyTypes list is empty – missing enemy configuration?");
             }
         }
 
