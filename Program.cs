@@ -1,3 +1,6 @@
+using Microsoft.VisualBasic.ApplicationServices;
+using System.Resources;
+
 namespace ProceduralDungeonGenerator
 {
     internal static class Program
@@ -8,10 +11,18 @@ namespace ProceduralDungeonGenerator
         [STAThread]
         static void Main()
         {
+
+            Config.LoadAllConfigs();
+
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new DungeonForm());
+
+            var dungeon = new Dungeon();
+            dungeon.GenerateDungeon();
+
+
+            Application.Run(new DungeonForm(dungeon));
         }
     }
 }

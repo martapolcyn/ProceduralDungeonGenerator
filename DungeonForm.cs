@@ -9,30 +9,20 @@ namespace ProceduralDungeonGenerator
     public partial class DungeonForm : Form
     {
 
-        private Dungeon dungeon;
+        private Dungeon _dungeon;
 
-        public DungeonForm()
+        public DungeonForm(Dungeon dungeon)
         {
             InitializeComponent();
-            this.ClientSize = new Size(800, 600);
-            dungeon = new Dungeon();
-            dungeon.GenerateDungeon(6);
+            this.ClientSize = new Size(Config.dungeonWidth, Config.dungeonHeight);
+            _dungeon = dungeon;
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-
-            Graphics g = e.Graphics; 
-
-            // Drawing every room
-            foreach (var room in dungeon.Rooms)
-            {
-                Rectangle rect = new Rectangle(room.X, room.Y, room.Width, room.Height);
-
-                g.FillRectangle(Brushes.LightBlue, rect);
-                g.DrawRectangle(Pens.Black, rect);
-            }
+            Graphics g = e.Graphics;
+            _dungeon.Draw(g);
         }
     }
 }
