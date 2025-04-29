@@ -76,19 +76,19 @@ namespace ProceduralDungeonGenerator
         {
             corridors.Clear();
 
-            // Lista odwiedzonych pokoi
+            // Visited rooms list
             var visitedRooms = new HashSet<int>();
 
-            // Zaczynamy od pierwszego pokoju
+            // First room
             visitedRooms.Add(0);
 
-            // Dopóki nie połączymy wszystkich pokoi
+            // While there are unconnected rooms
             while (visitedRooms.Count < rooms.Count)
             {
                 double minDistance = double.MaxValue;
                 int roomAIndex = -1, roomBIndex = -1;
 
-                // Szukamy najbliższej pary pokoi, które nie zostały jeszcze połączone
+                // Search for two nearest unconnected rooms
                 for (int i = 0; i < rooms.Count; i++)
                 {
                     if (!visitedRooms.Contains(i))
@@ -102,7 +102,7 @@ namespace ProceduralDungeonGenerator
                         var roomA = rooms[i];
                         var roomB = rooms[j];
 
-                        // Obliczamy odległość między pokojami
+                        // Calculate distance between rooms
                         var distance = CalculateDistance(roomA, roomB);
 
                         if (distance < minDistance)
@@ -114,7 +114,7 @@ namespace ProceduralDungeonGenerator
                     }
                 }
 
-                // Tworzymy korytarz między najbliższymi pokojami
+                // Create corridor
                 var a = rooms[roomAIndex];
                 var b = rooms[roomBIndex];
 
@@ -128,7 +128,7 @@ namespace ProceduralDungeonGenerator
 
                 System.Diagnostics.Debug.WriteLine($"Created corridor: {start} -> {mid} -> {end}");
 
-                // Oznaczamy pokoje jako połączone
+                // Mark rooms as connected
                 visitedRooms.Add(roomBIndex);
             }
         }
