@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProceduralDungeonGenerator.Model
 {
-    internal class DungeonStyleDungeon : IDungeonStyle
+    public class DungeonStyleDungeon : IDungeonStyle
     {
         public Pen GetCorridorPen()
         {
@@ -22,5 +22,7 @@ namespace ProceduralDungeonGenerator.Model
         {
             throw new NotImplementedException();
         }
+
+        public string GetName() => "Dungeon";
     }
 }

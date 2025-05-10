@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace ProceduralDungeonGenerator.Model
 {
-    internal interface IDungeonStyle
+    public interface IDungeonStyle
     {
         RoomShape GetRoomShape(Room room);
         Color GetRoomColor(Room room);
         Pen GetCorridorPen();
+
+        string GetName();
     }
 }
