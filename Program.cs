@@ -14,12 +14,14 @@ namespace ProceduralDungeonGenerator
         {
 
             Config.LoadAllConfigs();
+            //IDungeonStyle style = new DungeonStyleDungeon();
+            IDungeonStyle style = new DungeonStyleSpaceship();
 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
 
-            var dungeon = new Dungeon();
+            var dungeon = new Dungeon(style);
             dungeon.GenerateDungeon();
 
 

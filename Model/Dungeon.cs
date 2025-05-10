@@ -12,18 +12,20 @@ namespace ProceduralDungeonGenerator.Model
         public List<Corridor> corridors { get; private set; }
         private List<EnemyType> weightedEnemyTypes = new();
         private List<ArtifactName> weightedArtifactNames = new();
-
+        private IDungeonStyle style;
 
         private Random rand = new Random();
 
-        public Dungeon()
+        public Dungeon(IDungeonStyle dungeonStyle)
         {
+            style = dungeonStyle;
             rooms = new List<Room>();
             corridors = new List<Corridor>();
         }
 
         public void GenerateDungeon()
         {
+            Logger.Log($"Using dungeon style: {style.GetName()}");
             InitializeWeightedEnemyList();
             InitializeWeightedArtifactList();
             GenerateRooms();
