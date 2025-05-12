@@ -1,6 +1,8 @@
 using Microsoft.VisualBasic.ApplicationServices;
+using ProceduralDungeonGenerator.Configuration;
 using ProceduralDungeonGenerator.Model;
 using System.Resources;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ProceduralDungeonGenerator
 {
@@ -13,7 +15,7 @@ namespace ProceduralDungeonGenerator
         static void Main()
         {
 
-            Config.LoadAllConfigs();
+            ConfigManager.LoadAllConfigs("Spaceship");
             //IDungeonStyle style = new DungeonStyleDungeon();
             IDungeonStyle style = new DungeonStyleSpaceship();
 
@@ -25,7 +27,7 @@ namespace ProceduralDungeonGenerator
             dungeon.GenerateDungeon();
 
 
-            Application.Run(new DungeonForm(dungeon));
+            Application.Run(new DungeonForm());
         }
     }
 }

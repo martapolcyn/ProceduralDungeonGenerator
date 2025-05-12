@@ -13,6 +13,7 @@ namespace ProceduralDungeonGenerator.Configuration
         public required string ArtifactID { get; set; }
         public ArtifactName Name { get; set; }
         public int Weight { get; set; }
+        public required string Style { get; set; }
 
         public static List<ArtifactConfig> LoadFromCsv(string path)
         {
@@ -30,7 +31,7 @@ namespace ProceduralDungeonGenerator.Configuration
 
                 var parts = line.Split(',');
 
-                if (parts.Length != 3)
+                if (parts.Length != 4)
                     throw new FormatException($"Nieprawidłowa liczba kolumn w wierszu: {line}");
 
                 try
@@ -39,7 +40,8 @@ namespace ProceduralDungeonGenerator.Configuration
                     {
                         ArtifactID = parts[0].Trim(),
                         Name = Enum.Parse<ArtifactName>(parts[1].Trim()),
-                        Weight = int.Parse(parts[2].Trim())
+                        Weight = int.Parse(parts[2].Trim()),
+                        Style = parts[3].Trim()
                     };
 
                     artifactConfigs.Add(config);

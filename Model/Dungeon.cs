@@ -37,7 +37,7 @@ namespace ProceduralDungeonGenerator.Model
             rooms.Clear();
 
             // for each type of the room
-            foreach (var config in Config.RoomConfigs)
+            foreach (var config in ConfigManager.RoomConfigs)
             {
                 // pick random count of rooms within min and max and create them
                 int roomCount = rand.Next(config.MinCount, config.MaxCount + 1);
@@ -190,8 +190,8 @@ namespace ProceduralDungeonGenerator.Model
         private Room CreateRoom(RoomConfig rConfig)
         {
             // Position the room randomly
-            int x = rand.Next(0, Config.dungeonWidth);
-            int y = rand.Next(0, Config.dungeonHeight);
+            int x = rand.Next(0, ConfigManager.dungeonWidth);
+            int y = rand.Next(0, ConfigManager.dungeonHeight);
 
             var room = new Room(x, y, rConfig.Size, rConfig.Shape, rConfig.Type);
 
@@ -235,7 +235,7 @@ namespace ProceduralDungeonGenerator.Model
         {
             weightedEnemyTypes = new List<EnemyType>();
 
-            foreach (var config in Config.EnemyConfigs)
+            foreach (var config in ConfigManager.EnemyConfigs)
             {
                 for (int i = 0; i < config.Weight; i++)
                 {
@@ -254,7 +254,7 @@ namespace ProceduralDungeonGenerator.Model
         {
             weightedArtifactNames = new List<ArtifactName>();
 
-            foreach (var config in Config.ArtifactConfigs)
+            foreach (var config in ConfigManager.ArtifactConfigs)
             {
                 for (int i = 0; i < config.Weight; i++)
                 {

@@ -18,6 +18,7 @@ namespace ProceduralDungeonGenerator.Configuration
         public int MaxEnemies { get; set; }
         public int MinArtifacts { get; set; }
         public int MaxArtifacts { get; set; }
+        public required string Style { get; set; }
 
         public static List<RoomConfig> LoadFromCsv(string path)
         {
@@ -35,7 +36,7 @@ namespace ProceduralDungeonGenerator.Configuration
 
                 var parts = line.Split(',');
 
-                if (parts.Length != 10)
+                if (parts.Length != 11)
                     throw new FormatException($"Nieprawidłowa liczba kolumn w wierszu: {line}");
 
                 try
@@ -51,7 +52,8 @@ namespace ProceduralDungeonGenerator.Configuration
                         MinEnemies = int.Parse(parts[6].Trim()),
                         MaxEnemies = int.Parse(parts[7].Trim()),
                         MinArtifacts = int.Parse(parts[8].Trim()),
-                        MaxArtifacts = int.Parse(parts[9].Trim())
+                        MaxArtifacts = int.Parse(parts[9].Trim()),
+                        Style = parts[10].Trim()
                     };
 
                     roomConfigs.Add(config);
