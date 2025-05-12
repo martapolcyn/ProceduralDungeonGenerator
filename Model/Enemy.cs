@@ -5,7 +5,9 @@
         Zombie,
         Spider,
         Vampire,
-        Mummy
+        Mummy,
+        Ufo,
+        Alien
     }
 
     public class Enemy

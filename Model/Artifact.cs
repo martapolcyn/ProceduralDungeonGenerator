@@ -10,7 +10,8 @@ namespace ProceduralDungeonGenerator.Model
     {
         Coin,
         Sword,
-        Elixir
+        Elixir,
+        Diamond
     }
 
     public class Artifact

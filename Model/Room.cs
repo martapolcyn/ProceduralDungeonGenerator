@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using ProceduralDungeonGenerator.Configuration;
 
 namespace ProceduralDungeonGenerator.Model
 {
@@ -17,7 +18,9 @@ namespace ProceduralDungeonGenerator.Model
         KingChamber,
         Treasury,
         Normal,
-        Exit
+        Exit,
+        Laboratory,
+        Engine
     }
 
     public enum RoomSize
@@ -71,8 +74,8 @@ namespace ProceduralDungeonGenerator.Model
         {
             Random rand = new Random();
 
-            int w = Config.dungeonWidth;
-            int h = Config.dungeonHeight;
+            int w = ConfigManager.dungeonWidth;
+            int h = ConfigManager.dungeonHeight;
 
             switch (size)
             {
@@ -192,8 +195,8 @@ namespace ProceduralDungeonGenerator.Model
         {
             return X >= margin &&
                    Y >= margin &&
-                   X + Width + margin <= Config.dungeonWidth &&
-                   Y + Height + margin <= Config.dungeonHeight;
+                   X + Width + margin <= ConfigManager.dungeonWidth &&
+                   Y + Height + margin <= ConfigManager.dungeonHeight;
         }
 
         public override string ToString()

@@ -11,6 +11,7 @@ namespace ProceduralDungeonGenerator.Configuration
         public required string EnemyID { get; set; }
         public required EnemyType Type{ get; set; }
         public int Weight { get; set; }
+        public required string Style { get; set; }
 
         public static List<EnemyConfig> LoadFromCsv(string path)
         {
@@ -28,7 +29,7 @@ namespace ProceduralDungeonGenerator.Configuration
 
                 var parts = line.Split(',');
 
-                if (parts.Length != 3)
+                if (parts.Length != 4)
                     throw new FormatException($"Nieprawidłowa liczba kolumn w wierszu: {line}");
 
                 try
@@ -37,7 +38,8 @@ namespace ProceduralDungeonGenerator.Configuration
                     {
                         EnemyID = parts[0].Trim(),
                         Type = Enum.Parse<EnemyType>(parts[1].Trim()),
-                        Weight = int.Parse(parts[2].Trim())
+                        Weight = int.Parse(parts[2].Trim()),
+                        Style = parts[3].Trim()
                     };
 
                     enemyConfigs.Add(config);
