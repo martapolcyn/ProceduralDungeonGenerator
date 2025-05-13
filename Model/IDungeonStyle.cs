@@ -16,7 +16,7 @@ namespace ProceduralDungeonGenerator.Model
 
         RoomShape GetRoomShape(Room room);
 
-        //void GenerateCorridors(List<Room> rooms, List<Corridor> corridors, Func<Room, Room, double> distanceFunc);
+        List<Point> GetCorridorPath(Corridor corridor);
 
     }
 }

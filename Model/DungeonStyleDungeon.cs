@@ -37,6 +37,36 @@ namespace ProceduralDungeonGenerator.Model
             };
         }
 
-        
+        public List<Point> GetCorridorPath(Corridor corridor)
+        {
+            var start = corridor.StartRoom.Center();
+            var end = corridor.EndRoom.Center();
+
+            var path = new List<Point> { start };
+            var random = new Random();
+
+            int segments = random.Next(3, 6);
+            Point current = start;
+
+            for (int i = 0; i < segments - 1; i++)
+            {
+                int dx = end.X - current.X;
+                int dy = end.Y - current.Y;
+                bool horizontal = (i % 2 == 0);
+
+                int stepX = dx / (segments - i);
+                int stepY = dy / (segments - i);
+
+                current = new Point(
+                    current.X + (horizontal ? stepX : random.Next(-30, 30)),
+                    current.Y + (!horizontal ? stepY : random.Next(-30, 30))
+                );
+
+                path.Add(current);
+            }
+
+            path.Add(end);
+            return path;
+        }
     }
 }

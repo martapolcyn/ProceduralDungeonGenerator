@@ -37,5 +37,13 @@ namespace ProceduralDungeonGenerator.Model
             };
         }
 
+        public List<Point> GetCorridorPath(Corridor corridor)
+        {
+            var start = corridor.StartRoom.Center();
+            var end = corridor.EndRoom.Center();
+            var mid = new Point(end.X, start.Y);
+
+            return new List<Point> { start, mid, end };
+        }
     }
 }

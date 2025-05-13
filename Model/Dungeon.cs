@@ -274,14 +274,7 @@ namespace ProceduralDungeonGenerator.Model
         {
             foreach (var corridor in corridors)
             {
-                var start = corridor.Start;
-                var end = corridor.End;
-                var mid = new Point(end.X, start.Y);
-
-                using var pen = _style.GetCorridorPen();
-
-                g.DrawLine(pen, start, mid);
-                g.DrawLine(pen, mid, end);
+                corridor.Draw(g, _style);
             }
             foreach (var room in rooms)
             {
