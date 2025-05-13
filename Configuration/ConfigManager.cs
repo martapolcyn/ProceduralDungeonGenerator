@@ -19,12 +19,12 @@ namespace ProceduralDungeonGenerator.Configuration
         // general configuration
         public static int dungeonWidth = 1200;
         public static int dungeonHeight = 900;
-        public static DungeonStyle style = DungeonStyle.Dungeon;
 
         // configuration from files
         public static List<RoomConfig> RoomConfigs { get; private set; } = new List<RoomConfig>();
         public static List<EnemyConfig> EnemyConfigs { get; private set; } = new List<EnemyConfig>();
         public static List<ArtifactConfig> ArtifactConfigs { get; private set; } = new List<ArtifactConfig>();
+        public static List<ItemConfig> ItemConfigs { get; private set; } = new List<ItemConfig>();
 
         public static void LoadAllConfigs(string style)
         {
@@ -33,6 +33,8 @@ namespace ProceduralDungeonGenerator.Configuration
             EnemyConfigs = EnemyConfig.LoadFromCsv(@"Resources\config_enemy.csv")
                 .Where(e => e.Style.Equals(style, StringComparison.OrdinalIgnoreCase)).ToList();
             ArtifactConfigs = ArtifactConfig.LoadFromCsv(@"Resources\config_artifact.csv")
+                .Where(a => a.Style.Equals(style, StringComparison.OrdinalIgnoreCase)).ToList();
+            ItemConfigs = ItemConfig.LoadFromCsv(@"Resources\config_item.csv")
                 .Where(a => a.Style.Equals(style, StringComparison.OrdinalIgnoreCase)).ToList();
         }
     }

@@ -33,6 +33,7 @@ namespace ProceduralDungeonGenerator.Model
             GenerateCorridors();
         }
 
+        // Generates list of room objects
         private void GenerateRooms()
         {
             rooms.Clear();
@@ -78,6 +79,7 @@ namespace ProceduralDungeonGenerator.Model
             }
         }
 
+        // Generates list of corridor objects
         private void GenerateCorridors()
         {
             var allCorridors = new List<Corridor>();
@@ -282,6 +284,7 @@ namespace ProceduralDungeonGenerator.Model
             }
         }
 
+        // For MST
         private class DisjointSet
         {
             private Dictionary<Room, Room> parent = new();
