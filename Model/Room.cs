@@ -23,7 +23,11 @@ namespace ProceduralDungeonGenerator.Model
         Normal,
         Exit,
         Laboratory,
-        Engine
+        Engine,
+        ControlRoom,
+
+        Special,
+        Any
     }
 
     public enum RoomSize
@@ -51,6 +55,7 @@ namespace ProceduralDungeonGenerator.Model
 
         public List<Enemy> Enemies { get; private set; } = new();
         public List<Artifact> Artifacts { get; private set; } = new();
+        public List<Item> Items { get; private set; } = new();
 
         public Room(int x, int y, RoomSize size, RoomType type)
         {
@@ -78,6 +83,12 @@ namespace ProceduralDungeonGenerator.Model
         public void AssignArtifact(Artifact artifact)
         {
             Artifacts.Add(artifact);
+        }
+
+        // Assign item
+        public void AssignItem(Item item)
+        {
+            Items.Add(item);
         }
 
         // Room width and height based on room size and dungeon size
