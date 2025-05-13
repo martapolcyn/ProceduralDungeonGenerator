@@ -100,9 +100,9 @@ namespace ProceduralDungeonGenerator.Model
 
         // Draw room based on shape
         // TODO: implement irregularly shaped room
-        public void Draw(Graphics g)
+        public void Draw(Graphics g, IDungeonStyle _style)
         {
-            Brush brush = GetBrushForRoomType();
+            Brush brush = _style.GetRoomBrush();
 
             switch (Shape)
             {
@@ -133,27 +133,6 @@ namespace ProceduralDungeonGenerator.Model
                 float textY = Y + (Height / 2) - (textHeight / 2);
 
                 g.DrawString(id, font, textBrush, textX, textY);
-            }
-        }
-
-        // Room colour based on type
-        // TODO: define tiles with patterns instead
-        private Brush GetBrushForRoomType()
-        {
-            switch (Type)
-            {
-                case RoomType.Entrance:
-                    return Brushes.Green;
-                case RoomType.KingChamber:
-                    return Brushes.Red;
-                case RoomType.Treasury:
-                    return Brushes.Gold;
-                case RoomType.Normal:
-                    return Brushes.Gray;
-                case RoomType.Exit:
-                    return Brushes.Blue;
-                default:
-                    return Brushes.White;
             }
         }
 

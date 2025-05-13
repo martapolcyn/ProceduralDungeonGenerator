@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration.Internal;
 using System.Drawing;
+using System.Runtime.InteropServices.JavaScript;
 using ProceduralDungeonGenerator.Configuration;
 
 namespace ProceduralDungeonGenerator.Model
@@ -12,20 +13,20 @@ namespace ProceduralDungeonGenerator.Model
         public List<Corridor> corridors { get; private set; }
         private List<EnemyType> weightedEnemyTypes = new();
         private List<ArtifactName> weightedArtifactNames = new();
-        private IDungeonStyle style;
+        private IDungeonStyle _style;
 
         private Random rand = new Random();
 
         public Dungeon(IDungeonStyle dungeonStyle)
         {
-            style = dungeonStyle;
+            _style = dungeonStyle;
             rooms = new List<Room>();
             corridors = new List<Corridor>();
         }
 
         public void GenerateDungeon()
         {
-            Logger.Log($"Using dungeon style: {style.GetName()}");
+            Logger.Log($"Using dungeon style: {_style.Name}");
             InitializeWeightedEnemyList();
             InitializeWeightedArtifactList();
             GenerateRooms();
@@ -273,11 +274,18 @@ namespace ProceduralDungeonGenerator.Model
         {
             foreach (var corridor in corridors)
             {
-                corridor.Draw(g);
+                var start = corridor.Start;
+                var end = corridor.End;
+                var mid = new Point(end.X, start.Y);
+
+                using var pen = _style.GetCorridorPen();
+
+                g.DrawLine(pen, start, mid);
+                g.DrawLine(pen, mid, end);
             }
             foreach (var room in rooms)
             {
-                room.Draw(g);
+                room.Draw(g, _style);
             }
         }
 

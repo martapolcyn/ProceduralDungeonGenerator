@@ -8,14 +8,16 @@ namespace ProceduralDungeonGenerator.Model
 {
     public class DungeonStyleDungeon : IDungeonStyle
     {
+        public string Name => "Dungeon";
+
         public Pen GetCorridorPen()
         {
-            throw new NotImplementedException();
+            return new Pen(Color.DarkGray, 4);
         }
 
-        public Color GetRoomColor(Room room)
+        public Brush GetRoomBrush()
         {
-            throw new NotImplementedException();
+            return Brushes.SaddleBrown;
         }
 
         public RoomShape GetRoomShape(Room room)
@@ -23,6 +25,6 @@ namespace ProceduralDungeonGenerator.Model
             throw new NotImplementedException();
         }
 
-        public string GetName() => "Dungeon";
+        
     }
 }
