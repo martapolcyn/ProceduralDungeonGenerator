@@ -194,7 +194,7 @@ namespace ProceduralDungeonGenerator.Model
             int x = rand.Next(0, ConfigManager.dungeonWidth);
             int y = rand.Next(0, ConfigManager.dungeonHeight);
 
-            var room = new Room(x, y, rConfig.Size, rConfig.Shape, rConfig.Type);
+            var room = new Room(x, y, rConfig.Size, rConfig.Type);
 
             // Random count of enemies for this room
             int enemyCount = rand.Next(rConfig.MinEnemies, rConfig.MaxEnemies + 1);

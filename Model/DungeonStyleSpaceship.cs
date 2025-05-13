@@ -12,7 +12,7 @@ namespace ProceduralDungeonGenerator.Model
 
         public Pen GetCorridorPen()
         {
-            return new Pen(Color.Cyan, 10);
+            return new Pen(Color.Cyan, 20);
         }
 
         public Brush GetRoomBrush()
