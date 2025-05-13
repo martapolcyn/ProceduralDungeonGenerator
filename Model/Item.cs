@@ -19,11 +19,11 @@ namespace ProceduralDungeonGenerator.Model
         public string Style { get; set; }
         public ItemCategory Category { get; set; }
         public string Name { get; set; }
-        public string RoomType { get; set; }
+        public RoomType RoomType { get; set; }
         public string Placement { get; set; }
         public int Weight { get; set; }
 
-        public Item(string id, string style, ItemCategory category, string name, string roomType, string placement, int weight)
+        public Item(string id, string style, ItemCategory category, string name, RoomType roomType, string placement, int weight)
         {
             Id = id;
             Style = style;
