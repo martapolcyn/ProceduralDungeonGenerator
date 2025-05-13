@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,20 +27,24 @@ namespace ProceduralDungeonGenerator.Model
             return Math.Sqrt(dx * dx + dy * dy);
         }
 
+        public void Draw(Graphics g, IDungeonStyle style)
+        {
+            var pen = style.GetCorridorPen();
+
+            pen.StartCap = LineCap.Round;
+            pen.EndCap = LineCap.Round;
+            pen.LineJoin = LineJoin.Round;
+
+            var path = style.GetCorridorPath(this);
+
+            for (int i = 0; i < path.Count - 1; i++)
+            {
+                g.DrawLine(pen, path[i], path[i + 1]);
+            }
+        }
+
         public Point Start => StartRoom.Center();
         public Point End => EndRoom.Center();
-
-        //public void Draw(Graphics g)
-        //{
-        //    var start = Start;
-        //    var end = End;
-        //    var mid = new Point(end.X, start.Y);
-
-        //    using var pen = new Pen(Color.Gray, 4);
-
-        //    g.DrawLine(pen, start, mid);
-        //    g.DrawLine(pen, mid, end);
-        //}
 
         public bool Connects(Room a, Room b)
         {

@@ -107,7 +107,7 @@ namespace ProceduralDungeonGenerator.Model
         }
 
         // Draw room based on shape
-        // TODO: implement irregularly shaped room
+        // TODO: implement more irregularly shaped room
         public void Draw(Graphics g, IDungeonStyle _style)
         {
             Brush brush = _style.GetRoomBrush();
