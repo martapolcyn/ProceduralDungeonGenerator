@@ -12,6 +12,7 @@ namespace ProceduralDungeonGenerator.Model
         public Room StartRoom { get; }
         public Room EndRoom { get; }
         public double Distance { get; }
+        private List<Point>? _path; 
 
         public Corridor(Room startRoom, Room endRoom)
         {
@@ -35,11 +36,14 @@ namespace ProceduralDungeonGenerator.Model
             pen.EndCap = LineCap.Round;
             pen.LineJoin = LineJoin.Round;
 
-            var path = style.GetCorridorPath(this);
-
-            for (int i = 0; i < path.Count - 1; i++)
+            if (_path == null)
             {
-                g.DrawLine(pen, path[i], path[i + 1]);
+                _path = style.GetCorridorPath(this);
+            }
+
+            for (int i = 0; i < _path.Count - 1; i++)
+            {
+                g.DrawLine(pen, _path[i], _path[i + 1]);
             }
         }
 

@@ -42,9 +42,12 @@ namespace ProceduralDungeonGenerator.Model
         public int Y { get; private set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
-        public RoomShape Shape { get; private set; }
+        public RoomShape? Shape { get; private set; }
         public RoomType Type { get; private set; }
         public RoomSize Size { get; private set; }
+
+        private Point[]? _cachedLShapePoints;
+        private Point[]? _cachedCustomShapePoints;
 
         public List<Enemy> Enemies { get; private set; } = new();
         public List<Artifact> Artifacts { get; private set; } = new();
@@ -112,7 +115,11 @@ namespace ProceduralDungeonGenerator.Model
         {
             Brush brush = _style.GetRoomBrush();
 
-            RoomShape Shape = _style.GetRoomShape(this);
+            if (Shape == null)
+            {
+                Shape = _style.GetRoomShape(this);
+            }
+            
 
             switch (Shape)
             {
@@ -128,16 +135,22 @@ namespace ProceduralDungeonGenerator.Model
                 case RoomShape.LShape:
                     {
                         using GraphicsPath path = new();
-                        var points = GetLShapePoints(X, Y, Width, Height);
-                        path.AddPolygon(points);
+                        if (_cachedLShapePoints == null)
+                        {
+                            _cachedLShapePoints = GetLShapePoints(X, Y, Width, Height);
+                        }
+                        path.AddPolygon(_cachedLShapePoints);
                         g.FillPath(brush, path);
                     }
                     break;
                 case RoomShape.Custom:
                     {
                         using GraphicsPath path = new();
-                        var points = GenerateIrregularPolygon(X, Y, Width, Height);
-                        path.AddPolygon(points);
+                        if (_cachedCustomShapePoints == null)
+                        {
+                            _cachedCustomShapePoints = GetLShapePoints(X, Y, Width, Height);
+                        }
+                        path.AddPolygon(_cachedCustomShapePoints);
                         g.FillPath(brush, path);
                         break;
                     }
