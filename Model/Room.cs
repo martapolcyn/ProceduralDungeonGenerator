@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Reflection;
 using ProceduralDungeonGenerator.Configuration;
 
 namespace ProceduralDungeonGenerator.Model
@@ -9,7 +10,9 @@ namespace ProceduralDungeonGenerator.Model
     {
         Rectangle,
         Circle,
-        Custom
+        Custom,
+        Square,
+        LShape
     }
 
     public enum RoomType
@@ -46,15 +49,20 @@ namespace ProceduralDungeonGenerator.Model
         public List<Enemy> Enemies { get; private set; } = new();
         public List<Artifact> Artifacts { get; private set; } = new();
 
-        public Room(int x, int y, RoomSize size, RoomShape shape, RoomType type)
+        public Room(int x, int y, RoomSize size, RoomType type)
         {
             ID = ++_idCounter;
             X = x;
             Y = y;
             Size = size;
-            Shape = shape;
             Type = type;
-            (Width, Height) = GetRoomSize(size);
+            if (Type == RoomType.Entrance || Type == RoomType.Exit)
+            {
+                (Width, Height) = (20, 20);
+            } else
+            {
+                (Width, Height) = GetRoomSize(size);
+            }
         }
 
         // Assign enememy
@@ -100,9 +108,11 @@ namespace ProceduralDungeonGenerator.Model
 
         // Draw room based on shape
         // TODO: implement irregularly shaped room
-        public void Draw(Graphics g)
+        public void Draw(Graphics g, IDungeonStyle _style)
         {
-            Brush brush = GetBrushForRoomType();
+            Brush brush = _style.GetRoomBrush();
+
+            RoomShape Shape = _style.GetRoomShape(this);
 
             switch (Shape)
             {
@@ -111,6 +121,17 @@ namespace ProceduralDungeonGenerator.Model
                     break;
                 case RoomShape.Circle:
                     g.FillEllipse(brush, X, Y, Width, Height);
+                    break;
+                case RoomShape.Square:
+                    g.FillRectangle(brush, X, Y, Width, Width);
+                    break;
+                case RoomShape.LShape:
+                    {
+                        using GraphicsPath path = new();
+                        var points = GetLShapePoints(X, Y, Width, Height);
+                        path.AddPolygon(points);
+                        g.FillPath(brush, path);
+                    }
                     break;
                 case RoomShape.Custom:
                     {
@@ -136,25 +157,61 @@ namespace ProceduralDungeonGenerator.Model
             }
         }
 
-        // Room colour based on type
-        // TODO: define tiles with patterns instead
-        private Brush GetBrushForRoomType()
+        // L shape room
+        private Point[] GetLShapePoints(int x, int y, int width, int height)
         {
-            switch (Type)
+            var random = new Random();
+            int orientation = random.Next(0, 4); // 0–3, cztery warianty L
+
+            int armWidth = width / 2;
+            int armHeight = height / 2;
+
+            return orientation switch
             {
-                case RoomType.Entrance:
-                    return Brushes.Green;
-                case RoomType.KingChamber:
-                    return Brushes.Red;
-                case RoomType.Treasury:
-                    return Brushes.Gold;
-                case RoomType.Normal:
-                    return Brushes.Gray;
-                case RoomType.Exit:
-                    return Brushes.Blue;
-                default:
-                    return Brushes.White;
-            }
+                // └ L
+                0 => new Point[]
+                {
+                    new(x, y),
+                    new(x + armWidth, y),
+                    new(x + armWidth, y + height - armHeight),
+                    new(x + width, y + height - armHeight),
+                    new(x + width, y + height),
+                    new(x, y + height)
+                },
+
+                // ┌ L
+                1 => new Point[]
+                {
+                    new(x + width - armWidth, y),
+                    new(x + width, y),
+                    new(x + width, y + height),
+                    new(x, y + height),
+                    new(x, y + armHeight),
+                    new(x + width - armWidth, y + armHeight)
+                },
+
+                // ┘ L
+                2 => new Point[]
+                {
+                    new(x, y),
+                    new(x + width, y),
+                    new(x + width, y + height),
+                    new(x + width - armWidth, y + height),
+                    new(x + width - armWidth, y + armHeight),
+                    new(x, y + armHeight)
+                },
+
+                // ┐ L
+                _ => new Point[]
+                {
+                    new(x, y),
+                    new(x + armWidth, y),
+                    new(x + armWidth, y + height - armHeight),
+                    new(x + width, y + height - armHeight),
+                    new(x + width, y + height),
+                    new(x, y + height)
+                },
+            };
         }
 
         // Custom room shape

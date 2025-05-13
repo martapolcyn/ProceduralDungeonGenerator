@@ -8,21 +8,34 @@ namespace ProceduralDungeonGenerator.Model
 {
     public class DungeonStyleSpaceship : IDungeonStyle
     {
+        private static readonly Random random = new();
+
+        public string Name => "Spaceship";
+
         public Pen GetCorridorPen()
         {
-            throw new NotImplementedException();
+            return new Pen(Color.Cyan, 20);
         }
 
-        public Color GetRoomColor(Room room)
+        public Brush GetRoomBrush()
         {
-            throw new NotImplementedException();
+            return Brushes.GreenYellow;
         }
 
         public RoomShape GetRoomShape(Room room)
         {
-            throw new NotImplementedException();
+            if (room.Type == RoomType.Entrance || room.Type == RoomType.Exit)
+            {
+                return RoomShape.Square;
+            }
+
+            int roll = random.Next(0, 10);
+            return roll switch
+            {
+                < 5 => RoomShape.Circle,
+                _ => RoomShape.Square
+            };
         }
 
-        public string GetName() => "Spaceship";
     }
 }

@@ -34,7 +34,7 @@ namespace ProceduralDungeonGenerator.Configuration
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
 
-                var parts = line.Split(',');
+                var parts = line.Split(';');
 
                 if (parts.Length != 11)
                     throw new FormatException($"Nieprawidłowa liczba kolumn w wierszu: {line}");
@@ -44,16 +44,16 @@ namespace ProceduralDungeonGenerator.Configuration
                     var config = new RoomConfig
                     {
                         RoomID = parts[0].Trim(),
-                        Type = Enum.Parse<RoomType>(parts[1].Trim(), true),
-                        MinCount = int.Parse(parts[2].Trim()),
-                        MaxCount = int.Parse(parts[3].Trim()),
-                        Size = Enum.Parse<RoomSize>(parts[4].Trim(), true),
-                        Shape = Enum.Parse<RoomShape>(parts[5].Trim(), true),
-                        MinEnemies = int.Parse(parts[6].Trim()),
-                        MaxEnemies = int.Parse(parts[7].Trim()),
-                        MinArtifacts = int.Parse(parts[8].Trim()),
-                        MaxArtifacts = int.Parse(parts[9].Trim()),
-                        Style = parts[10].Trim()
+                        Style = parts[1].Trim(),
+                        Type = Enum.Parse<RoomType>(parts[2].Trim(), true),
+                        MinCount = int.Parse(parts[3].Trim()),
+                        MaxCount = int.Parse(parts[4].Trim()),
+                        Size = Enum.Parse<RoomSize>(parts[5].Trim(), true),
+                        Shape = Enum.Parse<RoomShape>(parts[6].Trim(), true),
+                        MinEnemies = int.Parse(parts[7].Trim()),
+                        MaxEnemies = int.Parse(parts[8].Trim()),
+                        MinArtifacts = int.Parse(parts[9].Trim()),
+                        MaxArtifacts = int.Parse(parts[10].Trim())
                     };
 
                     roomConfigs.Add(config);

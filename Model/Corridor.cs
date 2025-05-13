@@ -29,17 +29,17 @@ namespace ProceduralDungeonGenerator.Model
         public Point Start => StartRoom.Center();
         public Point End => EndRoom.Center();
 
-        public void Draw(Graphics g)
-        {
-            var start = Start;
-            var end = End;
-            var mid = new Point(end.X, start.Y);
+        //public void Draw(Graphics g)
+        //{
+        //    var start = Start;
+        //    var end = End;
+        //    var mid = new Point(end.X, start.Y);
 
-            using var pen = new Pen(Color.Gray, 4);
+        //    using var pen = new Pen(Color.Gray, 4);
 
-            g.DrawLine(pen, start, mid);
-            g.DrawLine(pen, mid, end);
-        }
+        //    g.DrawLine(pen, start, mid);
+        //    g.DrawLine(pen, mid, end);
+        //}
 
         public bool Connects(Room a, Room b)
         {

@@ -29,7 +29,7 @@ namespace ProceduralDungeonGenerator.Configuration
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
 
-                var parts = line.Split(',');
+                var parts = line.Split(';');
 
                 if (parts.Length != 4)
                     throw new FormatException($"Nieprawidłowa liczba kolumn w wierszu: {line}");
@@ -39,9 +39,9 @@ namespace ProceduralDungeonGenerator.Configuration
                     var config = new ArtifactConfig
                     {
                         ArtifactID = parts[0].Trim(),
-                        Name = Enum.Parse<ArtifactName>(parts[1].Trim()),
-                        Weight = int.Parse(parts[2].Trim()),
-                        Style = parts[3].Trim()
+                        Style = parts[1].Trim(),
+                        Name = Enum.Parse<ArtifactName>(parts[2].Trim()),
+                        Weight = int.Parse(parts[3].Trim())
                     };
 
                     artifactConfigs.Add(config);

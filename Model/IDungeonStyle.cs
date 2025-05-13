@@ -8,10 +8,15 @@ namespace ProceduralDungeonGenerator.Model
 {
     public interface IDungeonStyle
     {
-        RoomShape GetRoomShape(Room room);
-        Color GetRoomColor(Room room);
+        string Name { get; }
+
         Pen GetCorridorPen();
 
-        string GetName();
+        Brush GetRoomBrush();
+
+        RoomShape GetRoomShape(Room room);
+
+        //void GenerateCorridors(List<Room> rooms, List<Corridor> corridors, Func<Room, Room, double> distanceFunc);
+
     }
 }
