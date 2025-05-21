@@ -14,7 +14,7 @@ namespace ProceduralDungeonGenerator.Configuration
         public ItemCategory Category { get; set; }
         public string Name { get; set; }
         public RoomType RoomType { get; set; }
-        public string Placement { get; set; }
+        public PlacementType Placement { get; set; }
         public int Weight { get; set; }
 
         public static List<ItemConfig> LoadFromCsv(string path)
@@ -45,7 +45,7 @@ namespace ProceduralDungeonGenerator.Configuration
                         Category = Enum.Parse<ItemCategory>(parts[2].Trim()),
                         Name = parts[3].Trim(),
                         RoomType = Enum.Parse<RoomType>(parts[4].Trim(), true),
-                        Placement = parts[5].Trim(),
+                        Placement = Enum.Parse<PlacementType>(parts[5].Trim(), true),
                         Weight = int.Parse(parts[6].Trim())
                     };
 
