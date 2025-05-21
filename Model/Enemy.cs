@@ -13,6 +13,7 @@
     public class Enemy
     {
         public EnemyType Type { get; private set; }
+        public Point? Position { get; set; }
 
         public Enemy(EnemyType type)
         {
@@ -21,7 +22,7 @@
 
         public override string ToString()
         {
-            return $"Enemy: Typ={Type}";
+            return $"Enemy: Typ={Type}, Position={Position}";
         }
     }
 }

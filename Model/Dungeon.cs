@@ -152,7 +152,10 @@ namespace ProceduralDungeonGenerator.Model
             for (int i = 0; i < itemCount; i++)
             {
                 int index = rand.Next(weightedItemList.Count);
-                room.AssignItem(weightedItemList[index]);
+                Item item = weightedItemList[index];
+                room.AssignItem(item);
+                room.AssignItemPosition(item);
+                Logger.Log($"Room {room.ID} has item {item}");
             }
             
         }
