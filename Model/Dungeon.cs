@@ -89,6 +89,7 @@ namespace ProceduralDungeonGenerator.Model
                         if (!collision)
                         {
                             rooms.Add(newRoom);
+                            newRoom.InitializeGeometry(_style);
                             Logger.Log($"Created: {newRoom}");
                             break;
                         }

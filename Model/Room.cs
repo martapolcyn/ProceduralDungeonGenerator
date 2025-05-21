@@ -52,6 +52,9 @@ namespace ProceduralDungeonGenerator.Model
 
         private Point[]? _cachedLShapePoints;
         private Point[]? _cachedCustomShapePoints;
+        private List<Point> RoomBoundaryPoints;
+        private List<Point> RoomInteriorPoints;
+
 
         public List<Enemy> Enemies { get; private set; } = new();
         public List<Artifact> Artifacts { get; private set; } = new();
@@ -94,54 +97,22 @@ namespace ProceduralDungeonGenerator.Model
         // Assign item position
         public void AssignItemPosition(Item item)
         {
-            Point position;
+            Random rand = new(item.GetHashCode() + ID);
 
-            switch (item.Placement)
+            if (RoomInteriorPoints == null || RoomInteriorPoints.Count == 0 ||
+                RoomBoundaryPoints == null || RoomBoundaryPoints.Count == 0)
             {
-                case PlacementType.Wall:
-                    position = GetRandomWallPosition();
-                    break;
-                case PlacementType.CorridorStart:
-                    position = GetCorridorStartPosition();
-                    break;
-                case PlacementType.Any:
-                default:
-                    position = GetRandomInnerPosition();
-                    break;
+                throw new InvalidOperationException("RoomInteriorPoints or RoomBoundaryPoints not initialized. Ensure room was drawn before assigning positions.");
             }
 
-            item.Position = position;
-        }
-
-        // Placement: Any (anywhere in the room)
-        private Point GetRandomInnerPosition()
-        {
-            Random rand = new();
-            int x = rand.Next(X + 1, X + Width - 1);
-            int y = rand.Next(Y + 1, Y + Height - 1);
-            return new Point(x, y);
-        }
-
-        // Placement: Wall (in the room at the wall)
-        private Point GetRandomWallPosition()
-        {
-            Random rand = new();
-            int side = rand.Next(4);
-
-            return side switch
+            Point position = item.Placement switch
             {
-                0 => new Point(rand.Next(X + 1, X + Width - 1), Y), // top
-                1 => new Point(rand.Next(X + 1, X + Width - 1), Y + Height - 1), // bottom
-                2 => new Point(X, rand.Next(Y + 1, Y + Height - 1)), // left
-                3 => new Point(X + Width - 1, rand.Next(Y + 1, Y + Height - 1)), // right
-                _ => GetRandomInnerPosition()
+                PlacementType.Wall => RoomBoundaryPoints[rand.Next(RoomBoundaryPoints.Count)],
+                //PlacementType.CorridorStart => GetCorridorStartPosition(),
+                PlacementType.Any or _ => RoomInteriorPoints[rand.Next(RoomInteriorPoints.Count)],
             };
-        }
 
-        // Placement: CorridorStart (e.g. door)
-        private Point GetCorridorStartPosition()
-        {
-            return Center(); // TODO: implement finding start of corridor
+            item.Position = position;
         }
 
         // Room width and height based on room size and dungeon size
@@ -171,6 +142,43 @@ namespace ProceduralDungeonGenerator.Model
             int centerX = X + Width / 2;
             int centerY = Y + Height / 2;
             return new Point(centerX, centerY);
+        }
+
+        // Define geometry of the room
+        public void InitializeGeometry(IDungeonStyle style)
+        {
+            if (Shape == null)
+                Shape = style.GetRoomShape(this);
+
+            using GraphicsPath path = new();
+
+            switch (Shape)
+            {
+                case RoomShape.Rectangle:
+                    path.AddRectangle(new Rectangle(X, Y, Width, Height));
+                    break;
+
+                case RoomShape.Square:
+                    path.AddRectangle(new Rectangle(X, Y, Width, Width));
+                    break;
+
+                case RoomShape.Circle:
+                    path.AddEllipse(X, Y, Width, Height);
+                    break;
+
+                case RoomShape.LShape:
+                    _cachedLShapePoints ??= GetLShapePoints(X, Y, Width, Height);
+                    path.AddPolygon(_cachedLShapePoints);
+                    break;
+
+                case RoomShape.Custom:
+                    _cachedCustomShapePoints ??= GenerateIrregularPolygon(X, Y, Width, Height);
+                    path.AddPolygon(_cachedCustomShapePoints);
+                    break;
+            }
+
+            RoomInteriorPoints = GetInteriorPoints(path);
+            RoomBoundaryPoints = GetBoundaryPoints(path);
         }
 
         // Draw Room based on shape, with items, enemies and artifacts
@@ -217,12 +225,49 @@ namespace ProceduralDungeonGenerator.Model
                 case RoomShape.Custom:
                     using (GraphicsPath path = new())
                     {
-                        _cachedCustomShapePoints ??= GetLShapePoints(X, Y, Width, Height);
+                        _cachedCustomShapePoints ??= GenerateIrregularPolygon(X, Y, Width, Height);
                         path.AddPolygon(_cachedCustomShapePoints);
                         g.FillPath(brush, path);
                     }
                     break;
             }
+        }
+
+        // Define room boundaries
+        private List<Point> GetBoundaryPoints(GraphicsPath path)
+        {
+            var points = new List<Point>();
+
+            var pathPoints = path.PathPoints;
+
+            foreach (var pt in pathPoints)
+            {
+                points.Add(Point.Round(pt));
+            }
+
+            return points;
+        }
+
+        // Define room inner points
+        private List<Point> GetInteriorPoints(GraphicsPath path)
+        {
+            var points = new List<Point>();
+
+            var bounds = Rectangle.Round(path.GetBounds());
+
+            for (int x = bounds.Left; x <= bounds.Right; x++)
+            {
+                for (int y = bounds.Top; y <= bounds.Bottom; y++)
+                {
+                    var pt = new Point(x, y);
+                    if (path.IsVisible(pt))
+                    {
+                        points.Add(pt);
+                    }
+                }
+            }
+
+            return points;
         }
 
         // Sign room with id
@@ -276,9 +321,17 @@ namespace ProceduralDungeonGenerator.Model
                 if (enemy.Position == null)
                 {
                     Random rand = new(enemy.GetHashCode() + ID);
-                    int px = rand.Next(X + 4, X + Width - 4);
-                    int py = rand.Next(Y + 4, Y + Height - 4);
-                    enemy.Position = new Point(px, py);
+
+                    if (RoomInteriorPoints != null && RoomInteriorPoints.Count > 0)
+                    {
+                        int index = rand.Next(RoomInteriorPoints.Count);
+                        enemy.Position = RoomInteriorPoints[index];
+                    }
+                    else
+                    {
+                        // fallback - center
+                        enemy.Position = new Point(X + Width / 2, Y + Height / 2);
+                    }
                 }
 
                 Point pos = enemy.Position.Value;
@@ -300,15 +353,12 @@ namespace ProceduralDungeonGenerator.Model
                 if (artifact.Position == null)
                 {
                     Random rand = new(artifact.GetHashCode() + ID);
-                    int px = rand.Next(X + 4, X + Width - 4);
-                    int py = rand.Next(Y + 4, Y + Height - 4);
-                    artifact.Position = new Point(px, py);
+                    artifact.Position = GetRandomPointInside(rand);
                 }
 
                 Point pos = artifact.Position.Value;
                 int size = 6;
 
-                // Rysuj trójkąt (np. skierowany w górę)
                 Point[] trianglePoints = new Point[]
                 {
                     new Point(pos.X, pos.Y - size / 2),
@@ -321,6 +371,17 @@ namespace ProceduralDungeonGenerator.Model
             }
         }
 
+        // Get random point within the bounds of the room
+        private Point GetRandomPointInside(Random rand)
+        {
+            if (RoomInteriorPoints != null && RoomInteriorPoints.Count > 0)
+            {
+                return RoomInteriorPoints[rand.Next(RoomInteriorPoints.Count)];
+            }
+
+            // fallback
+            return new Point(X + Width / 2, Y + Height / 2);
+        }
 
         // L shape room
         private Point[] GetLShapePoints(int x, int y, int width, int height)
