@@ -30,6 +30,8 @@ namespace ProceduralDungeonGenerator.Model
         public PlacementType Placement { get; set; }
         public int Weight { get; set; }
 
+        public Point? Position { get; set; }
+
         public Item(string id, string style, ItemCategory category, string name, RoomType roomType, PlacementType placement, int weight)
         {
             Id = id;
@@ -43,7 +45,7 @@ namespace ProceduralDungeonGenerator.Model
 
         public override string ToString()
         {
-            return $"Item: Category={Category}, Name={Name}";
+            return $"Item: Category={Category}, Name={Name}, Position=({Position})";
         }
     }
 
