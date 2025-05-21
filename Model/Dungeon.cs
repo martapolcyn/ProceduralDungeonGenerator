@@ -130,6 +130,12 @@ namespace ProceduralDungeonGenerator.Model
         // Fill room with items
         private void Furnish(Room room)
         {
+            if (room.Type == RoomType.Entrance || room.Type == RoomType.Exit)
+            {
+                // No items in exits and entrances
+                return;
+            }
+
             // pick only possible items
             var candidates = ConfigManager.ItemConfigs
                 .Where(iConfig => (iConfig.RoomType == RoomType.Any || iConfig.RoomType == room.Type))
