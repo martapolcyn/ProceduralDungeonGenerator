@@ -290,9 +290,14 @@ namespace ProceduralDungeonGenerator.Model
                 ? "None"
                 : string.Join(", ", Artifacts.Select(e => e.Name.ToString()));
 
+            string itemSummary = Items.Count == 0
+                ? "None"
+                : string.Join(", ", Items.Select(e => e.Name.ToString()));
+
             return $"Room {ID}: Type={Type}, Shape={Shape}, Size={Size}, X={X}, Y={Y}, Width={Width}, Height={Height}, " +
                 $"Enemies({Enemies.Count}): [{enemySummary}], " +
-                $"Artrifacts({Artifacts.Count}): [{artifactSummary}]";
+                $"Artrifacts({Artifacts.Count}): [{artifactSummary}], " +
+                $"Items({Items.Count}): [{itemSummary}]";
         }
     }
 }

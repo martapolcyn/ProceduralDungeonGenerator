@@ -24,12 +24,30 @@ namespace ProceduralDungeonGenerator.Model
             corridors = new List<Corridor>();
         }
 
+        // Draw dungeon
+        public void Draw(Graphics g)
+        {
+            foreach (var corridor in corridors)
+            {
+                corridor.Draw(g, _style);
+            }
+            foreach (var room in rooms)
+            {
+                room.Draw(g, _style);
+            }
+        }
+
         public void GenerateDungeon()
         {
             Logger.Log($"Using dungeon style: {_style.Name}");
             InitializeWeightedEnemyList();
             InitializeWeightedArtifactList();
             GenerateRooms();
+            foreach (var room in rooms)
+            {
+                Furnish(room);
+                Logger.Log($"Furnished: {room}");
+            }
             GenerateCorridors();
         }
 
@@ -106,6 +124,37 @@ namespace ProceduralDungeonGenerator.Model
 
             // MinumumSpanningTree
             RunMST(allCorridors);
+        }
+
+        // Fill room with items
+        private void Furnish(Room room)
+        {
+            // pick only possible items
+            var candidates = ConfigManager.ItemConfigs
+                .Where(iConfig => (iConfig.RoomType == RoomType.Any || iConfig.RoomType == room.Type))
+                .ToList();
+
+            // weighted list of items candidates for this room
+            List<Item> weightedItemList = new List<Item>();
+
+            foreach (var config in ConfigManager.ItemConfigs)
+            {
+                for (int i = 0; i < config.Weight; i++)
+                {
+                    weightedItemList.Add(new Item(config.ItemID, config.Style, config.Category,
+                        config.Name, config.RoomType, config.Placement, config.Weight));
+                }
+            }
+
+            // random count of items for this room
+            int itemCount = Random.Shared.Next(2, 7);
+
+            for (int i = 0; i < itemCount; i++)
+            {
+                int index = rand.Next(weightedItemList.Count);
+                room.AssignItem(weightedItemList[index]);
+            }
+            
         }
 
         // Connects entrances and exits to nearest normal room
@@ -268,19 +317,6 @@ namespace ProceduralDungeonGenerator.Model
             if (weightedArtifactNames.Count == 0)
             {
                 Logger.Log("[WARNING] weightedArtifactNames list is empty – missing artifact configuration?");
-            }
-        }
-
-        // Draw dungeon
-        public void Draw(Graphics g)
-        {
-            foreach (var corridor in corridors)
-            {
-                corridor.Draw(g, _style);
-            }
-            foreach (var room in rooms)
-            {
-                room.Draw(g, _style);
             }
         }
 
