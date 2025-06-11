@@ -1,64 +1,52 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing.Drawing2D;
+using ProceduralDungeonGenerator.Configuration;
+using ProceduralDungeonGenerator.Model;
 
-namespace ProceduralDungeonGenerator.Model
+public class Corridor
 {
-    public class Corridor
+    public Room StartRoom { get; }
+    public Room EndRoom { get; }
+    public double Distance { get; }
+
+    internal List<Point> Path { get; set; } = new();
+
+    public Corridor(Room startRoom, Room endRoom)
     {
-        public Room StartRoom { get; }
-        public Room EndRoom { get; }
-        public double Distance { get; }
-        private List<Point>? _path; 
+        StartRoom = startRoom;
+        EndRoom = endRoom;
+        Distance = CalculateRoomDistance(startRoom, endRoom);
+    }
 
-        public Corridor(Room startRoom, Room endRoom)
+    private double CalculateRoomDistance(Room a, Room b)
+    {
+        int dx = a.Center().X - b.Center().X;
+        int dy = a.Center().Y - b.Center().Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    private int CalculatePointDistance(Point a, Point b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
+
+    public void Draw(Graphics g, IDungeonStyle style)
+    {
+        Brush brush = style.GetCorridorBrush();
+        int tileSize = ConfigManager.tileSize;
+
+        foreach (Point tile in Path)
         {
-            StartRoom = startRoom;
-            EndRoom = endRoom;
-            Distance = CalculateDistance(startRoom, endRoom);
-        }
-
-        private double CalculateDistance(Room a, Room b)
-        {
-            int dx = a.Center().X - b.Center().X;
-            int dy = a.Center().Y - b.Center().Y;
-            return Math.Sqrt(dx * dx + dy * dy);
-        }
-
-        public void Draw(Graphics g, IDungeonStyle style)
-        {
-            var pen = style.GetCorridorPen();
-
-            pen.StartCap = LineCap.Round;
-            pen.EndCap = LineCap.Round;
-            pen.LineJoin = LineJoin.Round;
-
-            if (_path == null)
-            {
-                _path = style.GetCorridorPath(this);
-            }
-
-            for (int i = 0; i < _path.Count - 1; i++)
-            {
-                g.DrawLine(pen, _path[i], _path[i + 1]);
-            }
-        }
-
-        public Point Start => StartRoom.Center();
-        public Point End => EndRoom.Center();
-
-        public bool Connects(Room a, Room b)
-        {
-            return (StartRoom == a && EndRoom == b) || (StartRoom == b && EndRoom == a);
-        }
-
-        public override string ToString()
-        {
-            return $"Corridor: Start Room No. {StartRoom.ID}, End Room No. {EndRoom.ID}";
+            int x = tile.X * tileSize;
+            int y = tile.Y * tileSize;
+            g.FillRectangle(brush, x, y, tileSize, tileSize);
         }
     }
 
+    public bool Connects(Room a, Room b)
+    {
+        return (StartRoom == a && EndRoom == b) || (StartRoom == b && EndRoom == a);
+    }
+
+
+    public override string ToString()
+    {
+        return $"Corridor: Start Room No. {StartRoom.ID}, End Room No. {EndRoom.ID}";
+    }
 }

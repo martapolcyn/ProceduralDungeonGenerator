@@ -12,9 +12,9 @@ namespace ProceduralDungeonGenerator.Model
 
         public string Name => "Spaceship";
 
-        public Pen GetCorridorPen()
+        public Brush GetCorridorBrush()
         {
-            return new Pen(Color.Cyan, 20);
+            return Brushes.Cyan;
         }
 
         public Brush GetRoomBrush()
@@ -22,7 +22,7 @@ namespace ProceduralDungeonGenerator.Model
             return Brushes.GreenYellow;
         }
 
-        public RoomShape GetRoomShape(Room room)
+        public RoomShape DetermineRoomShape(Room room)
         {
             if (room.Type == RoomType.Entrance || room.Type == RoomType.Exit)
             {
@@ -37,13 +37,33 @@ namespace ProceduralDungeonGenerator.Model
             };
         }
 
-        public List<Point> GetCorridorPath(Corridor corridor)
+        public List<Point> DetermineCorridorPath(Corridor corridor, HashSet<Point> blocked)
         {
-            var start = corridor.StartRoom.Center();
-            var end = corridor.EndRoom.Center();
-            var mid = new Point(end.X, start.Y);
+            var path = new List<Point>();
 
-            return new List<Point> { start, mid, end };
+            // Znajdź najbliższe brzegi obu pokoi
+            var startTile = corridor.StartRoom.GetClosestBoundaryTileTo(corridor.EndRoom.Center());
+            var endTile = corridor.EndRoom.GetClosestBoundaryTileTo(startTile);
+
+            // Najpierw X, potem Y
+            int x = startTile.X;
+            int y = startTile.Y;
+
+            path.Add(new Point(x, y));
+
+            while (x != endTile.X)
+            {
+                x += x < endTile.X ? 1 : -1;
+                path.Add(new Point(x, y));
+            }
+
+            while (y != endTile.Y)
+            {
+                y += y < endTile.Y ? 1 : -1;
+                path.Add(new Point(x, y));
+            }
+
+            return path;
         }
     }
 }

@@ -50,10 +50,8 @@ namespace ProceduralDungeonGenerator.Model
         public RoomType Type { get; private set; }
         public RoomSize Size { get; private set; }
 
-        private Point[]? _cachedLShapePoints;
-        private Point[]? _cachedCustomShapePoints;
-        private List<Point> RoomBoundaryPoints;
-        private List<Point> RoomInteriorPoints;
+        internal List<Point> RoomInteriorTiles { get; private set; }
+        internal List<Point> RoomBoundaryTiles { get; private set; }
 
 
         public List<Enemy> Enemies { get; private set; } = new();
@@ -69,8 +67,9 @@ namespace ProceduralDungeonGenerator.Model
             Type = type;
             if (Type == RoomType.Entrance || Type == RoomType.Exit)
             {
-                (Width, Height) = (20, 20);
-            } else
+                (Width, Height) = (1, 1);
+            } 
+            else
             {
                 (Width, Height) = GetRoomSize(size);
             }
@@ -99,40 +98,52 @@ namespace ProceduralDungeonGenerator.Model
         {
             Random rand = new(item.GetHashCode() + ID);
 
-            if (RoomInteriorPoints == null || RoomInteriorPoints.Count == 0 ||
-                RoomBoundaryPoints == null || RoomBoundaryPoints.Count == 0)
+            if (RoomInteriorTiles == null || RoomInteriorTiles.Count == 0 ||
+                RoomBoundaryTiles == null || RoomBoundaryTiles.Count == 0)
             {
-                throw new InvalidOperationException("RoomInteriorPoints or RoomBoundaryPoints not initialized. Ensure room was drawn before assigning positions.");
+                throw new InvalidOperationException("RoomInteriorTiles or RoomBoundaryTiles not initialized. Ensure room tiles were generated before assigning positions.");
             }
 
             Point position = item.Placement switch
             {
-                PlacementType.Wall => RoomBoundaryPoints[rand.Next(RoomBoundaryPoints.Count)],
-                //PlacementType.CorridorStart => GetCorridorStartPosition(),
-                PlacementType.Any or _ => RoomInteriorPoints[rand.Next(RoomInteriorPoints.Count)],
+                PlacementType.Wall => RoomBoundaryTiles[rand.Next(RoomBoundaryTiles.Count)],
+                // PlacementType.CorridorStart => GetCorridorStartPosition(),
+                PlacementType.Any or _ => RoomInteriorTiles[rand.Next(RoomInteriorTiles.Count)],
             };
 
             item.Position = position;
         }
 
-        // Room width and height based on room size and dungeon size
+        // Room width and height in tiles based on room size and dungeon size
         private (int, int) GetRoomSize(RoomSize size)
         {
             Random rand = new Random();
 
-            int w = ConfigManager.dungeonWidth;
-            int h = ConfigManager.dungeonHeight;
+            int gridW = ConfigManager.gridWidth;
+            int gridH = ConfigManager.gridHeight;
 
             switch (size)
             {
                 case RoomSize.Small:
-                    return (rand.Next(w/20, w/16), rand.Next(h/20, h/12));
+                    return (
+                        rand.Next(gridW / 20, gridW / 12),
+                        rand.Next(gridH / 20, gridH / 12)
+                    );
+
                 case RoomSize.Medium:
-                    return (rand.Next(w/16, w/8), rand.Next(h/12, h/6));
+                    return (
+                        rand.Next(gridW / 12, gridW / 8),
+                        rand.Next(gridH / 12, gridH / 8)
+                    );
+
                 case RoomSize.Big:
-                    return (rand.Next(w/8, w/5), rand.Next(h/6, h/4));
+                    return (
+                        rand.Next(gridW / 8, gridW / 6),
+                        rand.Next(gridH / 8, gridH / 6)
+                    );
+
                 default:
-                    return (w/16, w/12);
+                    return (gridW / 20, gridH / 20);
             }
         }
 
@@ -144,41 +155,161 @@ namespace ProceduralDungeonGenerator.Model
             return new Point(centerX, centerY);
         }
 
-        // Define geometry of the room
+        // Get closest boundary tile to a point
+        public Point GetClosestBoundaryTileTo(Point target)
+        {
+            return RoomBoundaryTiles
+                .OrderBy(p => Distance(p, target))
+                .First();
+        }
+
+        private double Distance(Point a, Point b)
+        {
+            int dx = a.X - b.X;
+            int dy = a.Y - b.Y;
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
+
+        // Room shapes definition
         public void InitializeGeometry(IDungeonStyle style)
         {
             if (Shape == null)
-                Shape = style.GetRoomShape(this);
+                Shape = style.DetermineRoomShape(this);
 
-            using GraphicsPath path = new();
+            RoomInteriorTiles = new List<Point>();
+            RoomBoundaryTiles = new List<Point>();
 
             switch (Shape)
             {
                 case RoomShape.Rectangle:
-                    path.AddRectangle(new Rectangle(X, Y, Width, Height));
-                    break;
-
                 case RoomShape.Square:
-                    path.AddRectangle(new Rectangle(X, Y, Width, Width));
+                    GenerateRectangularTiles();
                     break;
 
                 case RoomShape.Circle:
-                    path.AddEllipse(X, Y, Width, Height);
+                    GenerateCircularTiles();
                     break;
 
                 case RoomShape.LShape:
-                    _cachedLShapePoints ??= GetLShapePoints(X, Y, Width, Height);
-                    path.AddPolygon(_cachedLShapePoints);
+                    GenerateLShapedTiles();
                     break;
 
                 case RoomShape.Custom:
-                    _cachedCustomShapePoints ??= GenerateIrregularPolygon(X, Y, Width, Height);
-                    path.AddPolygon(_cachedCustomShapePoints);
+                    GenerateRectangularTiles();
                     break;
             }
+        }
 
-            RoomInteriorPoints = GetInteriorPoints(path);
-            RoomBoundaryPoints = GetBoundaryPoints(path);
+        private void GenerateRectangularTiles()
+        {
+            int height = (Shape == RoomShape.Square) ? Width : Height;
+
+            for (int x = X; x < X + Width; x++)
+            {
+                for (int y = Y; y < Y + height; y++)
+                {
+                    Point tile = new(x, y);
+                    RoomInteriorTiles.Add(tile);
+
+                    // Jeśli sąsiaduje z zewnętrzem → brzeg
+                    if (x == X || x == X + Width - 1 || y == Y || y == Y + height - 1)
+                        RoomBoundaryTiles.Add(tile);
+                }
+            }
+        }
+
+        private void GenerateCircularTiles()
+        {
+            float centerX = X + Width / 2f;
+            float centerY = Y + Height / 2f;
+            float radiusX = Width / 2f;
+            float radiusY = Height / 2f;
+
+            for (int x = X; x < X + Width; x++)
+            {
+                for (int y = Y; y < Y + Height; y++)
+                {
+                    // Normalizujemy współrzędne do układu elipsy
+                    float dx = (x + 0.5f - centerX) / radiusX;
+                    float dy = (y + 0.5f - centerY) / radiusY;
+
+                    if (dx * dx + dy * dy <= 1f) // punkt jest wewnątrz elipsy
+                    {
+                        Point tile = new(x, y);
+                        RoomInteriorTiles.Add(tile);
+
+                        // Sprawdź, czy to brzeg – sąsiad ma być na zewnątrz
+                        if (IsBoundaryTile(x, y))
+                            RoomBoundaryTiles.Add(tile);
+                    }
+                }
+            }
+        }
+
+        private bool IsBoundaryTile(int x, int y)
+        {
+            foreach ((int dx, int dy) in new[] { (-1, 0), (1, 0), (0, -1), (0, 1) })
+            {
+                int nx = x + dx;
+                int ny = y + dy;
+
+                float centerX = X + Width / 2f;
+                float centerY = Y + Height / 2f;
+                float radiusX = Width / 2f;
+                float radiusY = Height / 2f;
+
+                float ndx = (nx + 0.5f - centerX) / radiusX;
+                float ndy = (ny + 0.5f - centerY) / radiusY;
+
+                if (ndx * ndx + ndy * ndy > 1f)
+                    return true; // sąsiad leży poza elipsą → to brzeg
+            }
+
+            return false;
+        }
+
+        private void GenerateLShapedTiles()
+        {
+            RoomInteriorTiles = new List<Point>();
+            RoomBoundaryTiles = new List<Point>();
+
+            // Wymiary prostokątów składowych
+            int armWidth = Width / 2;
+            int armHeight = Height / 2;
+
+            // Pozycje
+            int verticalX = X;
+            int verticalY = Y;
+            int verticalWidth = armWidth;
+            int verticalHeight = Height;
+
+            int horizontalX = X;
+            int horizontalY = Y + armHeight;
+            int horizontalWidth = Width;
+            int horizontalHeight = Height - armHeight;
+
+            // Dodajemy wszystkie tile z pionowego ramienia
+            AddTilesFromRect(verticalX, verticalY, verticalWidth, verticalHeight);
+
+            // Dodajemy wszystkie tile z poziomego ramienia (części wspólne nie będą dodane drugi raz)
+            AddTilesFromRect(horizontalX, horizontalY, horizontalWidth, horizontalHeight);
+        }
+
+        private void AddTilesFromRect(int startX, int startY, int width, int height)
+        {
+            for (int x = startX; x < startX + width; x++)
+            {
+                for (int y = startY; y < startY + height; y++)
+                {
+                    Point tile = new(x, y);
+
+                    if (!RoomInteriorTiles.Contains(tile))
+                        RoomInteriorTiles.Add(tile);
+
+                    if (IsBoundaryTile(x, y))
+                        RoomBoundaryTiles.Add(tile);
+                }
+            }
         }
 
         // Draw Room based on shape, with items, enemies and artifacts
@@ -195,93 +326,31 @@ namespace ProceduralDungeonGenerator.Model
         private void DrawRoomShape(Graphics g, IDungeonStyle style)
         {
             Brush brush = style.GetRoomBrush();
+            int tileSize = ConfigManager.tileSize;
 
-            if (Shape == null)
-                Shape = style.GetRoomShape(this);
+            if (RoomInteriorTiles == null || RoomInteriorTiles.Count == 0)
+                return;
 
-            switch (Shape)
+            foreach (Point tile in RoomInteriorTiles)
             {
-                case RoomShape.Rectangle:
-                    g.FillRectangle(brush, X, Y, Width, Height);
-                    break;
-
-                case RoomShape.Circle:
-                    g.FillEllipse(brush, X, Y, Width, Height);
-                    break;
-
-                case RoomShape.Square:
-                    g.FillRectangle(brush, X, Y, Width, Width);
-                    break;
-
-                case RoomShape.LShape:
-                    using (GraphicsPath path = new())
-                    {
-                        _cachedLShapePoints ??= GetLShapePoints(X, Y, Width, Height);
-                        path.AddPolygon(_cachedLShapePoints);
-                        g.FillPath(brush, path);
-                    }
-                    break;
-
-                case RoomShape.Custom:
-                    using (GraphicsPath path = new())
-                    {
-                        _cachedCustomShapePoints ??= GenerateIrregularPolygon(X, Y, Width, Height);
-                        path.AddPolygon(_cachedCustomShapePoints);
-                        g.FillPath(brush, path);
-                    }
-                    break;
+                int x = tile.X * tileSize;
+                int y = tile.Y * tileSize;
+                g.FillRectangle(brush, x, y, tileSize, tileSize);
             }
-        }
-
-        // Define room boundaries
-        private List<Point> GetBoundaryPoints(GraphicsPath path)
-        {
-            var points = new List<Point>();
-
-            var pathPoints = path.PathPoints;
-
-            foreach (var pt in pathPoints)
-            {
-                points.Add(Point.Round(pt));
-            }
-
-            return points;
-        }
-
-        // Define room inner points
-        private List<Point> GetInteriorPoints(GraphicsPath path)
-        {
-            var points = new List<Point>();
-
-            var bounds = Rectangle.Round(path.GetBounds());
-
-            for (int x = bounds.Left; x <= bounds.Right; x++)
-            {
-                for (int y = bounds.Top; y <= bounds.Bottom; y++)
-                {
-                    var pt = new Point(x, y);
-                    if (path.IsVisible(pt))
-                    {
-                        points.Add(pt);
-                    }
-                }
-            }
-
-            return points;
         }
 
         // Sign room with id
         private void DrawRoomId(Graphics g)
         {
-            using var font = new Font("Arial", 12);
-            using var textBrush = new SolidBrush(Color.Black);
+            int tileSize = ConfigManager.tileSize;
+            using var font = new Font("Arial", 10);
+            using var textBrush = new SolidBrush(Color.White);
 
             string id = ID.ToString();
-            float textWidth = g.MeasureString(id, font).Width;
-            float textHeight = g.MeasureString(id, font).Height;
 
-            float textX = X + (Width / 2) - (textWidth / 2);
-            float textY = Y + (Height / 2) - (textHeight / 2);
+            // Lewy górny róg pokoju w pikselach
+            float textX = X * tileSize;
+            float textY = Y * tileSize;
 
             g.DrawString(id, font, textBrush, textX, textY);
         }
@@ -289,6 +358,7 @@ namespace ProceduralDungeonGenerator.Model
         // Draw items on positions
         private void DrawItems(Graphics g)
         {
+            int tileSize = ConfigManager.tileSize;
             using var font = new Font("Arial", 6);
             Brush itemBrush = Brushes.Green;
 
@@ -296,17 +366,27 @@ namespace ProceduralDungeonGenerator.Model
             {
                 if (item.Position == null)
                 {
-                    Random rand = new(item.GetHashCode() + ID);
-                    int px = rand.Next(X + 4, X + Width - 4);
-                    int py = rand.Next(Y + 4, Y + Height - 4);
-                    item.Position = new Point(px, py);
+                    // Wybierz losową kratkę z RoomInteriorTiles
+                    if (RoomInteriorTiles != null && RoomInteriorTiles.Count > 0)
+                    {
+                        Random rand = new(item.GetHashCode() + ID);
+                        int index = rand.Next(RoomInteriorTiles.Count);
+                        item.Position = RoomInteriorTiles[index];
+                    }
                 }
 
-                Point pos = item.Position.Value;
-                int size = 5;
+                if (item.Position != null)
+                {
+                    Point pos = item.Position.Value;
+                    int px = pos.X * tileSize;
+                    int py = pos.Y * tileSize;
 
-                g.FillEllipse(itemBrush, pos.X - size / 2, pos.Y - size / 2, size, size);
-                g.DrawString(item.Name, font, Brushes.Black, pos.X + 4, pos.Y + 2);
+                    int size = tileSize / 2;
+                    int offset = (tileSize - size) / 2;
+
+                    g.FillEllipse(itemBrush, px + offset, py + offset, size, size);
+                    g.DrawString(item.Name, font, Brushes.Black, px + size, py);
+                }
             }
         }
 
@@ -322,23 +402,28 @@ namespace ProceduralDungeonGenerator.Model
                 {
                     Random rand = new(enemy.GetHashCode() + ID);
 
-                    if (RoomInteriorPoints != null && RoomInteriorPoints.Count > 0)
+                    if (RoomInteriorTiles != null && RoomInteriorTiles.Count > 0)
                     {
-                        int index = rand.Next(RoomInteriorPoints.Count);
-                        enemy.Position = RoomInteriorPoints[index];
+                        int index = rand.Next(RoomInteriorTiles.Count);
+                        enemy.Position = RoomInteriorTiles[index];
                     }
                     else
                     {
-                        // fallback - center
-                        enemy.Position = new Point(X + Width / 2, Y + Height / 2);
+                        // fallback – tile środkowy
+                        int centerX = X + Width / 2;
+                        int centerY = Y + Height / 2;
+                        enemy.Position = new Point(centerX, centerY);
                     }
                 }
 
-                Point pos = enemy.Position.Value;
+                Point tilePos = enemy.Position.Value;
+                int tileSize = ConfigManager.tileSize; // <- dodaj, jeśli masz skalowanie
+                int centerXPixel = tilePos.X * tileSize + tileSize / 2;
+                int centerYPixel = tilePos.Y * tileSize + tileSize / 2;
                 int size = 6;
 
-                g.FillRectangle(enemyBrush, pos.X - size / 2, pos.Y - size / 2, size, size);
-                g.DrawString(enemy.Type.ToString(), font, Brushes.Black, pos.X + 4, pos.Y + 2);
+                g.FillRectangle(enemyBrush, centerXPixel - size / 2, centerYPixel - size / 2, size, size);
+                g.DrawString(enemy.Type.ToString(), font, Brushes.Black, centerXPixel + 4, centerYPixel + 2);
             }
         }
 
@@ -347,121 +432,43 @@ namespace ProceduralDungeonGenerator.Model
         {
             using var font = new Font("Arial", 6);
             Brush artifactBrush = Brushes.Blue;
+            int tileSize = ConfigManager.tileSize;
 
             foreach (var artifact in Artifacts)
             {
                 if (artifact.Position == null)
                 {
                     Random rand = new(artifact.GetHashCode() + ID);
-                    artifact.Position = GetRandomPointInside(rand);
+
+                    if (RoomInteriorTiles != null && RoomInteriorTiles.Count > 0)
+                    {
+                        Point tile = RoomInteriorTiles[rand.Next(RoomInteriorTiles.Count)];
+                        artifact.Position = tile;
+                    }
+                    else
+                    {
+                        // fallback: środek pokoju w tile’ach
+                        artifact.Position = new Point(X + Width / 2, Y + Height / 2);
+                    }
                 }
 
-                Point pos = artifact.Position.Value;
+                Point tilePos = artifact.Position.Value;
+
+                // Przeliczenie środka tile'a na piksele
+                int centerX = tilePos.X * tileSize + tileSize / 2;
+                int centerY = tilePos.Y * tileSize + tileSize / 2;
                 int size = 6;
 
                 Point[] trianglePoints = new Point[]
                 {
-                    new Point(pos.X, pos.Y - size / 2),
-                    new Point(pos.X - size / 2, pos.Y + size / 2),
-                    new Point(pos.X + size / 2, pos.Y + size / 2)
+            new Point(centerX, centerY - size / 2),
+            new Point(centerX - size / 2, centerY + size / 2),
+            new Point(centerX + size / 2, centerY + size / 2)
                 };
 
                 g.FillPolygon(artifactBrush, trianglePoints);
-                g.DrawString(artifact.Name.ToString(), font, Brushes.Black, pos.X + 4, pos.Y + 2);
+                g.DrawString(artifact.Name.ToString(), font, Brushes.Black, centerX + 4, centerY + 2);
             }
-        }
-
-        // Get random point within the bounds of the room
-        private Point GetRandomPointInside(Random rand)
-        {
-            if (RoomInteriorPoints != null && RoomInteriorPoints.Count > 0)
-            {
-                return RoomInteriorPoints[rand.Next(RoomInteriorPoints.Count)];
-            }
-
-            // fallback
-            return new Point(X + Width / 2, Y + Height / 2);
-        }
-
-        // L shape room
-        private Point[] GetLShapePoints(int x, int y, int width, int height)
-        {
-            var random = new Random();
-            int orientation = random.Next(0, 4); // 0–3, cztery warianty L
-
-            int armWidth = width / 2;
-            int armHeight = height / 2;
-
-            return orientation switch
-            {
-                // └ L
-                0 => new Point[]
-                {
-                    new(x, y),
-                    new(x + armWidth, y),
-                    new(x + armWidth, y + height - armHeight),
-                    new(x + width, y + height - armHeight),
-                    new(x + width, y + height),
-                    new(x, y + height)
-                },
-
-                // ┌ L
-                1 => new Point[]
-                {
-                    new(x + width - armWidth, y),
-                    new(x + width, y),
-                    new(x + width, y + height),
-                    new(x, y + height),
-                    new(x, y + armHeight),
-                    new(x + width - armWidth, y + armHeight)
-                },
-
-                // ┘ L
-                2 => new Point[]
-                {
-                    new(x, y),
-                    new(x + width, y),
-                    new(x + width, y + height),
-                    new(x + width - armWidth, y + height),
-                    new(x + width - armWidth, y + armHeight),
-                    new(x, y + armHeight)
-                },
-
-                // ┐ L
-                _ => new Point[]
-                {
-                    new(x, y),
-                    new(x + armWidth, y),
-                    new(x + armWidth, y + height - armHeight),
-                    new(x + width, y + height - armHeight),
-                    new(x + width, y + height),
-                    new(x, y + height)
-                },
-            };
-        }
-
-        // Custom room shape
-        private Point[] GenerateIrregularPolygon(int x, int y, int width, int height)
-        {
-            Random rand = new Random(ID);
-            int pointCount = rand.Next(5, 9); // vertices
-
-            List<Point> points = new();
-            double angleStep = 2 * Math.PI / pointCount;
-
-            for (int i = 0; i < pointCount; i++)
-            {
-                double angle = i * angleStep;
-                double radiusX = width / 2 * (0.7 + rand.NextDouble() * 0.6);  // 70% - 130% radius
-                double radiusY = height / 2 * (0.7 + rand.NextDouble() * 0.6);
-
-                int px = x + width / 2 + (int)(Math.Cos(angle) * radiusX);
-                int py = y + height / 2 + (int)(Math.Sin(angle) * radiusY);
-
-                points.Add(new Point(px, py));
-            }
-
-            return points.ToArray();
         }
 
         // Check intersection with other rooms
@@ -474,12 +481,13 @@ namespace ProceduralDungeonGenerator.Model
         }
 
         // Check if the room fits the dungeon size
-        public bool IsWithinBounds(int margin = 10)
+        public bool IsWithinBounds()
         {
-            return X >= margin &&
-                   Y >= margin &&
-                   X + Width + margin <= ConfigManager.dungeonWidth &&
-                   Y + Height + margin <= ConfigManager.dungeonHeight;
+            var tileSize = ConfigManager.tileSize;
+            return X >= 1 &&
+                   Y >= 1 &&
+                   X + Width + 1 <= ConfigManager.gridWidth &&
+                   Y + Height + 1 <= ConfigManager.gridHeight;
         }
 
         public override string ToString()

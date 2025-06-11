@@ -16,9 +16,14 @@ namespace ProceduralDungeonGenerator.Configuration
     public static class ConfigManager
     {
 
-        // general configuration
-        public static int dungeonWidth = 1200;
-        public static int dungeonHeight = 900;
+        // Grid-based dungeon generation
+        public static int tileSize = 16;
+        public static int gridWidth = 80;
+        public static int gridHeight = 60;
+
+        // General configuration
+        public static int dungeonWidth => gridWidth * tileSize;
+        public static int dungeonHeight => gridHeight * tileSize;
 
         // configuration from files
         public static List<RoomConfig> RoomConfigs { get; private set; } = new List<RoomConfig>();

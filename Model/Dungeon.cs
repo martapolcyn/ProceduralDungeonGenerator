@@ -42,14 +42,70 @@ namespace ProceduralDungeonGenerator.Model
             Logger.Log($"Using dungeon style: {_style.Name}");
             InitializeWeightedEnemyList();
             InitializeWeightedArtifactList();
+
             GenerateRooms();
             foreach (var room in rooms)
             {
                 Furnish(room);
                 Logger.Log($"Furnished: {room}");
             }
+
             GenerateCorridors();
+            GenerateCorridorsPaths();
         }
+
+        private void GenerateCorridorsPaths()
+        {
+            var blockedTiles = new HashSet<Point>();
+
+            foreach (var corridor in corridors)
+            {
+                foreach (var room in rooms)
+                {
+                    foreach (var tile in room.RoomInteriorTiles)
+                        blockedTiles.Add(tile);
+                    foreach (var tile in room.RoomBoundaryTiles)
+                        blockedTiles.Remove(tile);
+                }
+
+                corridor.Path = _style.DetermineCorridorPath(corridor, blockedTiles);
+
+                if (corridor.Path != null && corridor.Path.Count > 0)
+                {
+                    foreach (var tile in corridor.Path)
+                        blockedTiles.Add(tile);
+                }
+                else
+                {
+                    Logger.Log($"Nie znaleziono ścieżki dla korytarza {corridor.StartRoom.ID} -> {corridor.EndRoom.ID}");
+                }
+            }
+
+        }
+
+
+
+        // Zwraca sąsiadujące kratki
+        private IEnumerable<Point> GetNeighbors(Point p)
+        {
+            var deltas = new[]
+            {
+        new Point(1, 0), new Point(-1, 0),
+        new Point(0, 1), new Point(0, -1)
+    };
+
+            foreach (var delta in deltas)
+            {
+                var np = new Point(p.X + delta.X, p.Y + delta.Y);
+
+                if (np.X >= 0 && np.X < ConfigManager.gridWidth &&
+                    np.Y >= 0 && np.Y < ConfigManager.gridHeight)
+                {
+                    yield return np;
+                }
+            }
+        }
+
 
         // Generates list of room objects
         private void GenerateRooms()
@@ -80,7 +136,7 @@ namespace ProceduralDungeonGenerator.Model
                             break;
                         }
 
-                        // Check if the room fits the dungeon
+                        //Check if the room fits the dungeon
                         if (!newRoom.IsWithinBounds())
                             continue;
 
@@ -251,9 +307,9 @@ namespace ProceduralDungeonGenerator.Model
         // Create room
         private Room CreateRoom(RoomConfig rConfig)
         {
-            // Position the room randomly
-            int x = rand.Next(0, ConfigManager.dungeonWidth);
-            int y = rand.Next(0, ConfigManager.dungeonHeight);
+            // Position the room randomly on the grid
+            int x = rand.Next(0, ConfigManager.gridWidth);
+            int y = rand.Next(0, ConfigManager.gridHeight);
 
             var room = new Room(x, y, rConfig.Size, rConfig.Type);
 

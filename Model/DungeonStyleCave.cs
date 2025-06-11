@@ -10,20 +10,20 @@ namespace ProceduralDungeonGenerator.Model
     {
         public string Name => "Cave";
 
-        public List<Point> GetCorridorPath(Corridor corridor)
+        public List<Point> DetermineCorridorPath(Corridor corridor, HashSet<Point> blocked)
         {
             // TODO: implement cave corridors
             var points = new List<Point>
             {
-                new Point(corridor.Start.X, corridor.Start.Y),
-                new Point(corridor.End.X, corridor.End.Y)
+                new Point(corridor.StartRoom.X, corridor.StartRoom.Y),
+                new Point(corridor.EndRoom.X, corridor.EndRoom.Y)
             };
             return points;
         }
 
-        public Pen GetCorridorPen()
+        public Brush GetCorridorBrush()
         {
-            return new Pen(Color.SaddleBrown, 6) { DashStyle = System.Drawing.Drawing2D.DashStyle.Solid };
+            return new SolidBrush(Color.FromArgb(120, 72, 48));
         }
 
         public Brush GetRoomBrush()
@@ -31,7 +31,7 @@ namespace ProceduralDungeonGenerator.Model
             return new SolidBrush(Color.FromArgb(120, 72, 48));
         }
 
-        public RoomShape GetRoomShape(Room room)
+        public RoomShape DetermineRoomShape(Room room)
         {
             throw new NotImplementedException();
         }
