@@ -60,13 +60,13 @@ namespace ProceduralDungeonGenerator.Model.Structure
         public List<Artifact> Artifacts { get; private set; } = new();
         public List<Item> Items { get; private set; } = new();
 
-        public Room(int x, int y, RoomSize size, RoomType type)
+        public Room(RoomSize size, RoomType type)
         {
             ID = ++_idCounter;
-            X = x;
-            Y = y;
+
             Size = size;
             Type = type;
+            
             if (Type == RoomType.Entrance || Type == RoomType.Exit)
             {
                 (Width, Height) = (1, 1);
@@ -75,6 +75,13 @@ namespace ProceduralDungeonGenerator.Model.Structure
             {
                 (Width, Height) = GetRoomSize(size);
             }
+        }
+
+        // Position the room
+        public void SetPosition(int x, int y)
+        {
+            X = x;
+            Y = y;
         }
 
         // Assign enememy
@@ -213,7 +220,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
                     Point tile = new(x, y);
                     RoomInteriorTiles.Add(tile);
 
-                    // Jeśli sąsiaduje z zewnętrzem → brzeg
+                    // Boundaries if the neighbour is no room
                     if (x == X || x == X + Width - 1 || y == Y || y == Y + height - 1)
                         RoomBoundaryTiles.Add(tile);
                 }

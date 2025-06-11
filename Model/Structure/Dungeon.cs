@@ -47,13 +47,18 @@ namespace ProceduralDungeonGenerator.Model.Structure
             InitializeWeightedArtifactList();
 
             GenerateRooms();
+            _style.ArrangeRooms(rooms);
+
+            GenerateCorridors();
+
             foreach (var room in rooms)
             {
                 Furnish(room);
                 Logger.Log($"Furnished: {room}");
             }
 
-            GenerateCorridors();
+            
+
             GenerateCorridorsPaths();
         }
 
@@ -88,7 +93,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
 
 
 
-        // Zwraca sąsiadujące kratki
+        // returns neighboring tiles
         private IEnumerable<Point> GetNeighbors(Point p)
         {
             var deltas = new[]
@@ -115,47 +120,21 @@ namespace ProceduralDungeonGenerator.Model.Structure
         {
             rooms.Clear();
 
-            // for each type of the room
             foreach (var config in ConfigManager.RoomConfigs)
             {
-                // pick random count of rooms within min and max and create them
                 int roomCount = rand.Next(config.MinCount, config.MaxCount + 1);
 
                 for (int i = 0; i < roomCount; i++)
                 {
-                    int attempts = 0;
-                    const int maxAttempts = 100;
+                    // Create the room, no collision/boundary logic here
+                    var room = CreateRoom(config);
 
-                    while (attempts < maxAttempts)
-                    {
-                        var newRoom = CreateRoom(config);
-                        attempts++;
-
-                        // Add the room no matter what if this is the very last attempt
-                        if (attempts == maxAttempts)
-                        {
-                            rooms.Add(newRoom);
-                            Logger.Log($"[WARNING] Created despite collision: {newRoom}");
-                            break;
-                        }
-
-                        //Check if the room fits the dungeon
-                        if (!newRoom.IsWithinBounds())
-                            continue;
-
-                        // Check if the room does not collide with other rooms
-                        bool collision = rooms.Any(existing => newRoom.Intersects(existing));
-                        if (!collision)
-                        {
-                            rooms.Add(newRoom);
-                            newRoom.InitializeGeometry(_style);
-                            Logger.Log($"Created: {newRoom}");
-                            break;
-                        }
-                    }
+                    rooms.Add(room);
+                    Logger.Log($"[Unplaced] Created room: {room}");
                 }
             }
         }
+
 
         // Generates list of corridor objects
         private void GenerateCorridors()
@@ -317,11 +296,8 @@ namespace ProceduralDungeonGenerator.Model.Structure
         // Create room
         private Room CreateRoom(RoomConfig rConfig)
         {
-            // Position the room randomly on the grid
-            int x = rand.Next(0, ConfigManager.gridWidth);
-            int y = rand.Next(0, ConfigManager.gridHeight);
 
-            var room = new Room(x, y, rConfig.Size, rConfig.Type);
+            var room = new Room(rConfig.Size, rConfig.Type);
 
             // Random count of enemies for this room
             int enemyCount = rand.Next(rConfig.MinEnemies, rConfig.MaxEnemies + 1);
