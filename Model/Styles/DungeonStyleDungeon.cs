@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ProceduralDungeonGenerator.Configuration;
+using ProceduralDungeonGenerator.Model.Structure;
 
-namespace ProceduralDungeonGenerator.Model
+namespace ProceduralDungeonGenerator.Model.Styles
 {
     public class DungeonStyleDungeon : IDungeonStyle
     {

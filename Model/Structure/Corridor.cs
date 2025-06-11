@@ -1,6 +1,7 @@
 ﻿using System.Drawing.Drawing2D;
 using ProceduralDungeonGenerator.Configuration;
-using ProceduralDungeonGenerator.Model;
+using ProceduralDungeonGenerator.Model.Structure;
+using ProceduralDungeonGenerator.Model.Styles;
 
 public class Corridor
 {

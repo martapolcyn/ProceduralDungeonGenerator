@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ProceduralDungeonGenerator.Model;
+using ProceduralDungeonGenerator.Model.Objects;
+using ProceduralDungeonGenerator.Model.Structure;
 
 namespace ProceduralDungeonGenerator.Configuration
 {
