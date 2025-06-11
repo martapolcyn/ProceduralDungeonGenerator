@@ -20,23 +20,22 @@ namespace ProceduralDungeonGenerator.Model
         CorridorStart
     }
 
-    public class Item
+    public abstract class Item
     {
         public string Id { get; set; }
         public string Style { get; set; }
-        public ItemCategory Category { get; set; }
         public string Name { get; set; }
         public RoomType RoomType { get; set; }
         public PlacementType Placement { get; set; }
         public int Weight { get; set; }
-
         public Point? Position { get; set; }
 
-        public Item(string id, string style, ItemCategory category, string name, RoomType roomType, PlacementType placement, int weight)
+        public abstract ItemCategory Category { get; }
+
+        protected Item(string id, string style, string name, RoomType roomType, PlacementType placement, int weight)
         {
             Id = id;
             Style = style;
-            Category = category;
             Name = name;
             RoomType = roomType;
             Placement = placement;
@@ -48,5 +47,4 @@ namespace ProceduralDungeonGenerator.Model
             return $"Item: Category={Category}, Name={Name}, Position=({Position})";
         }
     }
-
 }

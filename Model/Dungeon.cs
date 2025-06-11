@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration.Internal;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using ProceduralDungeonGenerator.Configuration;
 
@@ -204,8 +205,15 @@ namespace ProceduralDungeonGenerator.Model
             {
                 for (int i = 0; i < config.Weight; i++)
                 {
-                    weightedItemList.Add(new Item(config.ItemID, config.Style, config.Category,
-                        config.Name, config.RoomType, config.Placement, config.Weight));
+                    Item newItem = config.Category switch
+                    {
+                        ItemCategory.Furniture => new Furniture(config.ItemID, config.Style, config.Name, config.RoomType, config.Placement, config.Weight),
+                        ItemCategory.Architecture => new ArchitecturalItem(config.ItemID, config.Style, config.Name, config.RoomType, config.Placement, config.Weight),
+                        ItemCategory.Decoration => new Decoration(config.ItemID, config.Style, config.Name, config.RoomType, config.Placement, config.Weight),
+                        _ => throw new ArgumentOutOfRangeException($"Unknown category: {config.Category}")
+                    };
+
+                    weightedItemList.Add(newItem);
                 }
             }
 
