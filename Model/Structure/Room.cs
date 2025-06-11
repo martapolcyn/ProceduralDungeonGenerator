@@ -476,10 +476,10 @@ namespace ProceduralDungeonGenerator.Model.Structure
         // Check intersection with other rooms
         public bool Intersects(Room other)
         {
-            return X < other.X + other.Width &&
-                   X + Width > other.X &&
-                   Y < other.Y + other.Height &&
-                   Y + Height > other.Y;
+            return !(this.X + this.Width + 1 <= other.X ||
+                     other.X + other.Width + 1 <= this.X ||
+                     this.Y + this.Height + 1 <= other.Y ||
+                     other.Y + other.Height + 1 <= this.Y);
         }
 
         // Check if the room fits the dungeon size
