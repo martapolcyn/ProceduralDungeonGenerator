@@ -10,13 +10,13 @@ namespace ProceduralDungeonGenerator.Model
     {
         string Name { get; }
 
-        Pen GetCorridorPen();
+        Brush GetCorridorBrush();
 
         Brush GetRoomBrush();
 
-        RoomShape GetRoomShape(Room room);
+        RoomShape DetermineRoomShape(Room room);
 
-        List<Point> GetCorridorPath(Corridor corridor);
+        List<Point> DetermineCorridorPath(Corridor corridor, HashSet<Point> blocked);
 
     }
 }

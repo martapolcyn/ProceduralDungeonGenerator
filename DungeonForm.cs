@@ -132,8 +132,26 @@ namespace ProceduralDungeonGenerator
                 g.TranslateTransform(_panOffset.X, _panOffset.Y);
                 g.ScaleTransform(_scale, _scale);
 
+                DrawGrid(g);
                 _dungeon.Draw(g);
             }
+        }
+
+        private void DrawGrid(Graphics g)
+        {
+            Pen gridPen = new Pen(Color.LightGray, 1);
+
+            for (int x = 0; x <= ConfigManager.dungeonWidth; x += ConfigManager.tileSize)
+            {
+                g.DrawLine(gridPen, x, 0, x, ConfigManager.dungeonHeight);
+            }
+
+            for (int y = 0; y <= ConfigManager.dungeonHeight; y += ConfigManager.tileSize)
+            {
+                g.DrawLine(gridPen, 0, y, ConfigManager.dungeonWidth, y);
+            }
+
+            gridPen.Dispose();
         }
     }
 }
