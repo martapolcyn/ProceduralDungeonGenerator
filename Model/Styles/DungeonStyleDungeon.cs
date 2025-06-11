@@ -49,7 +49,6 @@ namespace ProceduralDungeonGenerator.Model.Styles
         }
 
 
-
         public class AStarPathfinder
         {
             private int width, height;
