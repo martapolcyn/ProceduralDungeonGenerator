@@ -17,6 +17,8 @@ namespace ProceduralDungeonGenerator.Model.Styles
 
         RoomShape DetermineRoomShape(Room room);
 
+        void ArrangeRooms(List<Room> rooms);
+
         List<Point> DetermineCorridorPath(Corridor corridor, HashSet<Point> blocked);
 
     }

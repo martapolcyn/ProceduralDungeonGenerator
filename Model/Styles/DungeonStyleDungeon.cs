@@ -123,5 +123,46 @@ namespace ProceduralDungeonGenerator.Model.Styles
             }
         }
 
+        public void ArrangeRooms(List<Room> rooms)
+        {
+            var rand = new Random();
+            var placedRooms = new List<Room>();
+            const int maxAttempts = 100;
+
+            foreach (var room in rooms)
+            {
+                bool placed = false;
+
+                for (int attempt = 0; attempt < maxAttempts; attempt++)
+                {
+                    int x = rand.Next(1, ConfigManager.gridWidth);
+                    int y = rand.Next(1, ConfigManager.gridHeight);
+
+                    room.SetPosition(x, y);
+                    room.InitializeGeometry(this);
+
+                    if (!room.IsWithinBounds())
+                        continue;
+
+                    bool intersects = placedRooms.Any(existing => room.Intersects(existing));
+                    if (intersects)
+                        continue;
+
+                    placedRooms.Add(room);
+                    placed = true;
+                    break;
+                }
+
+                if (!placed)
+                {
+                    Logger.Log($"[WARNING] Could not place room after {maxAttempts} attempts: {room}");
+                }
+            }
+
+            // return arranged rooms
+            rooms.Clear();
+            rooms.AddRange(placedRooms);
+        }
+
     }
 }

@@ -32,6 +32,11 @@ namespace ProceduralDungeonGenerator.Model.Styles
             return new SolidBrush(Color.FromArgb(120, 72, 48));
         }
 
+        public void ArrangeRooms(List<Room> rooms)
+        {
+            throw new NotImplementedException();
+        }
+
         public RoomShape DetermineRoomShape(Room room)
         {
             throw new NotImplementedException();
