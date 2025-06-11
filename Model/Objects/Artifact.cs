@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 
-namespace ProceduralDungeonGenerator.Model
+namespace ProceduralDungeonGenerator.Model.Objects
 {
     public enum ArtifactName
     {

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ProceduralDungeonGenerator.Model.Structure;
 
-namespace ProceduralDungeonGenerator.Model
+namespace ProceduralDungeonGenerator.Model.Objects
 {
     public class Furniture : Item
     {

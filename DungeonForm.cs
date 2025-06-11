@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using ProceduralDungeonGenerator.Configuration;
-using ProceduralDungeonGenerator.Model;
+using ProceduralDungeonGenerator.Model.Structure;
+using ProceduralDungeonGenerator.Model.Styles;
 
 
 namespace ProceduralDungeonGenerator

@@ -3,8 +3,10 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Reflection;
 using ProceduralDungeonGenerator.Configuration;
+using ProceduralDungeonGenerator.Model.Objects;
+using ProceduralDungeonGenerator.Model.Styles;
 
-namespace ProceduralDungeonGenerator.Model
+namespace ProceduralDungeonGenerator.Model.Structure
 {
     public enum RoomShape
     {
@@ -202,7 +204,7 @@ namespace ProceduralDungeonGenerator.Model
 
         private void GenerateRectangularTiles()
         {
-            int height = (Shape == RoomShape.Square) ? Width : Height;
+            int height = Shape == RoomShape.Square ? Width : Height;
 
             for (int x = X; x < X + Width; x++)
             {

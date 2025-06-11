@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ProceduralDungeonGenerator.Model;
+using ProceduralDungeonGenerator.Model.Structure;
 
 namespace ProceduralDungeonGenerator.Configuration
 {

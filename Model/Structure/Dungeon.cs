@@ -5,8 +5,10 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using ProceduralDungeonGenerator.Configuration;
+using ProceduralDungeonGenerator.Model.Objects;
+using ProceduralDungeonGenerator.Model.Styles;
 
-namespace ProceduralDungeonGenerator.Model
+namespace ProceduralDungeonGenerator.Model.Structure
 {
     public class Dungeon
     {
@@ -195,7 +197,7 @@ namespace ProceduralDungeonGenerator.Model
 
             // pick only possible items
             var candidates = ConfigManager.ItemConfigs
-                .Where(iConfig => (iConfig.RoomType == RoomType.Any || iConfig.RoomType == room.Type))
+                .Where(iConfig => iConfig.RoomType == RoomType.Any || iConfig.RoomType == room.Type)
                 .ToList();
 
             // weighted list of items candidates for this room
@@ -274,8 +276,8 @@ namespace ProceduralDungeonGenerator.Model
         private bool IsCorridorExists(Room a, Room b)
         {
             return corridors.Any(c =>
-                (c.StartRoom == a && c.EndRoom == b) ||
-                (c.StartRoom == b && c.EndRoom == a));
+                c.StartRoom == a && c.EndRoom == b ||
+                c.StartRoom == b && c.EndRoom == a);
         }
 
         // Minimum Spanning Tree algorithm
