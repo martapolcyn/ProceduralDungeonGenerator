@@ -57,8 +57,6 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 Logger.Log($"Furnished: {room}");
             }
 
-            
-
             GenerateCorridorsPaths();
         }
 

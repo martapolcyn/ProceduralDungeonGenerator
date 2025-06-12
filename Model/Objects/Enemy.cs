@@ -2,13 +2,25 @@
 {
     public enum EnemyType
     {
+        // Dungeon enemies
         Zombie,
         Spider,
         Vampire,
         Mummy,
+
+        // Spaceship enemies
         Ufo,
-        Alien
+        Alien,
+
+        // Cave enemies
+        Bat,
+        CaveSpider,
+        Troll,
+        Lurker,
+        GiantRat,
+        Goblin
     }
+
 
     public class Enemy
     {

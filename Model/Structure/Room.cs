@@ -14,7 +14,8 @@ namespace ProceduralDungeonGenerator.Model.Structure
         Circle,
         Custom,
         Square,
-        LShape
+        LShape,
+        Cave
     }
 
     public enum RoomType
@@ -27,6 +28,9 @@ namespace ProceduralDungeonGenerator.Model.Structure
         Laboratory,
         Engine,
         ControlRoom,
+        Lair,
+        CrystalChamber,
+        Tunnel,
 
         Special,
         Any
@@ -36,7 +40,8 @@ namespace ProceduralDungeonGenerator.Model.Structure
     {
         Small,
         Medium,
-        Big
+        Big,
+        Cave
     }
 
     public class Room
@@ -151,6 +156,12 @@ namespace ProceduralDungeonGenerator.Model.Structure
                         rand.Next(gridH / 8, gridH / 6)
                     );
 
+                case RoomSize.Cave:
+                    return (
+                        rand.Next(gridW / 8, gridW / 4),
+                        rand.Next(gridH / 6, gridH / 3)
+                    );
+
                 default:
                     return (gridW / 20, gridH / 20);
             }
@@ -206,8 +217,108 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 case RoomShape.Custom:
                     GenerateRectangularTiles();
                     break;
+
+                case RoomShape.Cave:
+                    GenerateCaveTiles();
+                    break;
             }
         }
+
+        private void GenerateCaveTiles()
+        {
+            int width = Width;
+            int height = Height;
+            int[,] map = new int[width, height];
+            Random rand = new Random(GetHashCode()); // Seeded for room variation
+
+            // Step 1: Random fill map
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
+                        map[x, y] = 1; // Wall boundary
+                    else
+                        map[x, y] = rand.NextDouble() < 0.45 ? 1 : 0; // 45% wall
+                }
+            }
+
+            // Step 2: Smooth map using cellular automata
+            for (int i = 0; i < 4; i++)
+                map = SmoothMap(map);
+
+            // Step 3: Convert to tiles
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    int globalX = X + x;
+                    int globalY = Y + y;
+                    Point tile = new(globalX, globalY);
+
+                    if (map[x, y] == 0)
+                        RoomInteriorTiles.Add(tile);
+                    else if (IsAdjacentToFloor(map, x, y))
+                        RoomBoundaryTiles.Add(tile);
+                }
+            }
+        }
+
+        private int[,] SmoothMap(int[,] map)
+        {
+            int width = map.GetLength(0);
+            int height = map.GetLength(1);
+            int[,] newMap = new int[width, height];
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    int wallCount = GetSurroundingWallCount(map, x, y);
+                    newMap[x, y] = wallCount > 4 ? 1 : 0;
+                }
+            }
+
+            return newMap;
+        }
+
+        private int GetSurroundingWallCount(int[,] map, int gridX, int gridY)
+        {
+            int wallCount = 0;
+            for (int x = gridX - 1; x <= gridX + 1; x++)
+            {
+                for (int y = gridY - 1; y <= gridY + 1; y++)
+                {
+                    if (x == gridX && y == gridY) continue;
+                    if (x < 0 || y < 0 || x >= map.GetLength(0) || y >= map.GetLength(1))
+                        wallCount++;
+                    else
+                        wallCount += map[x, y];
+                }
+            }
+            return wallCount;
+        }
+
+        private bool IsAdjacentToFloor(int[,] map, int x, int y)
+        {
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    int nx = x + dx;
+                    int ny = y + dy;
+
+                    if (nx >= 0 && ny >= 0 && nx < map.GetLength(0) && ny < map.GetLength(1))
+                    {
+                        if (map[nx, ny] == 0)
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+
 
         private void GenerateRectangularTiles()
         {
