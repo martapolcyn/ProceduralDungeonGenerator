@@ -9,11 +9,22 @@ namespace ProceduralDungeonGenerator.Model.Objects
 {
     public enum ArtifactName
     {
+        // Dungeon artifacts
         Coin,
         Sword,
         Elixir,
-        Diamond
+
+        // Spaceship artifacts
+        Diamond,
+
+        // Cave artifacts
+        Crystal,
+        AncientRelic,
+        HiddenMap,
+        MysteriousFungus,
+        CavePearl
     }
+
 
     public class Artifact
     {

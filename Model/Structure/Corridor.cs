@@ -25,8 +25,6 @@ public class Corridor
         return Math.Sqrt(dx * dx + dy * dy);
     }
 
-    private int CalculatePointDistance(Point a, Point b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
-
     public void Draw(Graphics g, IDungeonStyle style)
     {
         Brush brush = style.GetCorridorBrush();

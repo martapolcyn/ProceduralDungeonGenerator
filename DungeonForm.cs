@@ -42,7 +42,7 @@ namespace ProceduralDungeonGenerator
                 Width = 150,
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
-            styleComboBox.Items.AddRange(new[] { "Dungeon", "Spaceship" });
+            styleComboBox.Items.AddRange(new[] { "Dungeon", "Spaceship", "Cave" });
             styleComboBox.SelectedIndex = 0;
             Controls.Add(styleComboBox);
 
@@ -67,6 +67,7 @@ namespace ProceduralDungeonGenerator
             {
                 "Dungeon" => new DungeonStyleDungeon(),
                 "Spaceship" => new DungeonStyleSpaceship(),
+                "Cave" => new DungeonStyleCave(),
                 _ => throw new NotImplementedException()
             };
 
