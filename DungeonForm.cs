@@ -14,6 +14,7 @@ namespace ProceduralDungeonGenerator
 
         private ComboBox styleComboBox;
         private Button generateButton;
+        private Button saveButton;
         private Dungeon? _dungeon;
         private float _scale = 1.0f;
         private Point _panOffset = new Point(0, 0);
@@ -55,6 +56,15 @@ namespace ProceduralDungeonGenerator
             generateButton.Click += GenerateButton_Click;
             Controls.Add(generateButton);
 
+            saveButton = new Button()
+            {
+                Text = "Save",
+                Location = new Point(280, 10),
+                Width = 100
+            };
+            saveButton.Click += SaveButton_Click;
+            Controls.Add(saveButton);
+
             DoubleBuffered = true;
         }
 
@@ -75,6 +85,46 @@ namespace ProceduralDungeonGenerator
             _dungeon.GenerateDungeon();
             Invalidate();
         }
+
+        private void SaveButton_Click(object? sender, EventArgs e)
+        {
+            if (_dungeon == null)
+            {
+                MessageBox.Show("Generate map first.", "No map", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Plik PNG|*.png|Plik JPG|*.jpg",
+                Title = "Save as picture",
+                FileName = "dungeon"
+            };
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Utwórz bitmapê i narysuj dungeon na niej
+                using Bitmap bmp = new Bitmap(ConfigManager.dungeonWidth, ConfigManager.dungeonHeight);
+                using Graphics g = Graphics.FromImage(bmp);
+
+                g.Clear(Color.White); // lub inny kolor t³a
+                g.ScaleTransform(_scale, _scale);
+                g.TranslateTransform(_panOffset.X, _panOffset.Y);
+                DrawGrid(g);
+                _dungeon.Draw(g);
+
+                var ext = System.IO.Path.GetExtension(saveFileDialog.FileName).ToLower();
+                var format = ext switch
+                {
+                    ".jpg" => System.Drawing.Imaging.ImageFormat.Jpeg,
+                    _ => System.Drawing.Imaging.ImageFormat.Png
+                };
+
+                bmp.Save(saveFileDialog.FileName, format);
+                MessageBox.Show("Mapa zosta³a zapisana.", "Zapisano", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
 
         private void DungeonForm_MouseWheel(object sender, MouseEventArgs e)
         {
