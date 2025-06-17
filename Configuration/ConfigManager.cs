@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace ProceduralDungeonGenerator.Configuration
@@ -17,9 +18,9 @@ namespace ProceduralDungeonGenerator.Configuration
     {
 
         // Grid-based dungeon generation
-        public static int tileSize = 16;
-        public static int gridWidth = 80;
-        public static int gridHeight = 60;
+        public static int tileSize;
+        public static int gridWidth;
+        public static int gridHeight;
 
         // General configuration
         public static int dungeonWidth => gridWidth * tileSize;
@@ -42,5 +43,33 @@ namespace ProceduralDungeonGenerator.Configuration
             ItemConfigs = ItemConfig.LoadFromCsv(@"Resources\config_item.csv")
                 .Where(a => a.Style.Equals(style, StringComparison.OrdinalIgnoreCase)).ToList();
         }
+
+
+    public static void LoadGeneralConfig(string path = @"Resources\config_general.json")
+        {
+            if (!File.Exists(path))
+            {
+                Debug.WriteLine("Plik konfiguracji ogólnej nie istnieje.");
+                return;
+            }
+
+            try
+            {
+                string json = File.ReadAllText(path);
+                var config = JsonSerializer.Deserialize<GeneralConfig>(json);
+
+                if (config != null)
+                {
+                    tileSize = config.tileSize;
+                    gridWidth = config.gridWidth;
+                    gridHeight = config.gridHeight;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Błąd podczas ładowania konfiguracji ogólnej: {ex.Message}");
+            }
+        }
+
     }
 }
