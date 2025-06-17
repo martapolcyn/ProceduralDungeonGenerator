@@ -23,9 +23,10 @@ namespace ProceduralDungeonGenerator
 
         public DungeonForm()
         {
+            ConfigManager.LoadGeneralConfig();
             InitializeComponent();
             this.Text = "Procedural Dungeon Generator";
-            this.ClientSize = new Size(ConfigManager.dungeonWidth, ConfigManager.dungeonHeight + 50);
+            this.ClientSize = new Size(ConfigManager.dungeonWidth, ConfigManager.dungeonHeight);
             
             this.MouseWheel += DungeonForm_MouseWheel;
             this.DoubleBuffered = true;
@@ -71,6 +72,7 @@ namespace ProceduralDungeonGenerator
         private void GenerateButton_Click(object? sender, EventArgs e)
         {
             string selectedStyle = styleComboBox.SelectedItem?.ToString() ?? "Dungeon";
+            ConfigManager.LoadGeneralConfig();
             ConfigManager.LoadAllConfigs(selectedStyle);
 
             IDungeonStyle style = selectedStyle switch
@@ -83,6 +85,9 @@ namespace ProceduralDungeonGenerator
 
             _dungeon = new Dungeon(style);
             _dungeon.GenerateDungeon();
+
+            this.ClientSize = new Size(ConfigManager.dungeonWidth, ConfigManager.dungeonHeight);
+
             Invalidate();
         }
 
