@@ -101,7 +101,7 @@ namespace ProceduralDungeonGenerator
 
             using SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                Filter = "Plik PNG|*.png|Plik JPG|*.jpg",
+                Filter = "File PNG|*.png|Plik JPG|*.jpg",
                 Title = "Save as picture",
                 FileName = "dungeon"
             };
@@ -126,7 +126,7 @@ namespace ProceduralDungeonGenerator
                 };
 
                 bmp.Save(saveFileDialog.FileName, format);
-                MessageBox.Show("Mapa zosta³a zapisana.", "Zapisano", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Map has been saved.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 

@@ -93,7 +93,7 @@ namespace ProceduralDungeonGenerator.Model.Styles
                     }
                 }
 
-                return new List<Point>(); // brak ścieżki
+                return new List<Point>(); // no path
             }
 
             private int Heuristic(Point a, Point b)
