@@ -59,7 +59,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
 
         internal List<Point> RoomInteriorTiles { get; private set; }
         internal List<Point> RoomBoundaryTiles { get; private set; }
-
+        private HashSet<Point> OccupiedTiles { get; set; } = new();
 
         public List<Enemy> Enemies { get; private set; } = new();
         public List<Artifact> Artifacts { get; private set; } = new();
@@ -107,7 +107,85 @@ namespace ProceduralDungeonGenerator.Model.Structure
             Items.Add(item);
         }
 
-        // Assign item position
+        public void AssignEnemyPositions()
+        {
+            var occupiedTiles = new HashSet<Point>();
+
+            foreach (var enemy in Enemies)
+            {
+                if (enemy.Position == null)
+                {
+                    var freeTiles = new List<Point>();
+                    if (RoomInteriorTiles != null && OccupiedTiles != null)
+                    {
+                        foreach (var p in RoomInteriorTiles)
+                        {
+                            if (!occupiedTiles.Contains(p))
+                                freeTiles.Add(p);
+                        }
+                    }
+                    if (freeTiles.Count > 0)
+                    {
+                        Random rand = new Random(enemy.GetHashCode() + ID);
+                        enemy.Position = freeTiles[rand.Next(freeTiles.Count)];
+                        occupiedTiles.Add(enemy.Position.Value);
+                    }
+                    else
+                    {
+                        // fallback: środek pokoju
+                        enemy.Position = new Point(X + Width / 2, Y + Height / 2);
+                    }
+                }
+                else
+                {
+                    occupiedTiles.Add(enemy.Position.Value);
+                }
+            }
+        }
+
+        public void AssignArtifactPositions()
+        {
+            var occupiedTiles = new HashSet<Point>();
+            // blocked by enemies
+            foreach (var enemy in Enemies)
+            {
+                if (enemy.Position != null)
+                    occupiedTiles.Add(enemy.Position.Value);
+            }
+
+            foreach (var artifact in Artifacts)
+            {
+                if (artifact.Position == null)
+                {
+                    var freeTiles = new List<Point>();
+                    if (RoomInteriorTiles != null)
+                    {
+                        foreach (var p in RoomInteriorTiles)
+                        {
+                            if (!occupiedTiles.Contains(p))
+                                freeTiles.Add(p);
+                        }
+                    }
+                    if (freeTiles.Count > 0)
+                    {
+                        Random rand = new Random(artifact.GetHashCode() + ID);
+                        artifact.Position = freeTiles[rand.Next(freeTiles.Count)];
+                        occupiedTiles.Add(artifact.Position.Value);
+                    }
+                    else
+                    {
+                        // fallback
+                        artifact.Position = new Point(X + Width / 2, Y + Height / 2);
+                    }
+                }
+                else
+                {
+                    occupiedTiles.Add(artifact.Position.Value);
+                }
+            }
+        }
+
+
         public void AssignItemPosition(Item item)
         {
             Random rand = new(item.GetHashCode() + ID);
@@ -118,15 +196,38 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 throw new InvalidOperationException("RoomInteriorTiles or RoomBoundaryTiles not initialized. Ensure room tiles were generated before assigning positions.");
             }
 
-            Point position = item.Placement switch
+            // avoid occupied tiles
+            var occupiedTiles = new HashSet<Point>();
+
+            foreach (var enemy in Enemies)
+                if (enemy.Position != null)
+                    occupiedTiles.Add(enemy.Position.Value);
+
+            foreach (var artifact in Artifacts)
+                if (artifact.Position != null)
+                    occupiedTiles.Add(artifact.Position.Value);
+
+            foreach (var existingItem in Items)
+                if (existingItem.Position != null)
+                    occupiedTiles.Add(existingItem.Position.Value);
+
+            List<Point> candidateTiles = item.Placement switch
             {
-                PlacementType.Wall => RoomBoundaryTiles[rand.Next(RoomBoundaryTiles.Count)],
-                // TODO: PlacementType.CorridorStart => GetCorridorStartPosition(),
-                PlacementType.Any or _ => RoomInteriorTiles[rand.Next(RoomInteriorTiles.Count)],
+                PlacementType.Wall => RoomBoundaryTiles.Where(p => !occupiedTiles.Contains(p)).ToList(),
+                PlacementType.Any or _ => RoomInteriorTiles.Where(p => !occupiedTiles.Contains(p)).ToList(),
             };
 
-            item.Position = position;
+            if (candidateTiles.Count == 0)
+            {
+                // fallback
+                item.Position = new Point(X + Width / 2, Y + Height / 2);
+            }
+            else
+            {
+                item.Position = candidateTiles[rand.Next(candidateTiles.Count)];
+            }
         }
+
 
         // Room width and height in tiles based on room size and dungeon size
         private (int, int) GetRoomSize(RoomSize size)
@@ -318,8 +419,6 @@ namespace ProceduralDungeonGenerator.Model.Structure
             }
             return false;
         }
-
-
 
         private void GenerateRectangularTiles()
         {
@@ -515,22 +614,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             foreach (var enemy in Enemies)
             {
                 if (enemy.Position == null)
-                {
-                    Random rand = new(enemy.GetHashCode() + ID);
-
-                    if (RoomInteriorTiles != null && RoomInteriorTiles.Count > 0)
-                    {
-                        int index = rand.Next(RoomInteriorTiles.Count);
-                        enemy.Position = RoomInteriorTiles[index];
-                    }
-                    else
-                    {
-                        // fallback
-                        int centerX = X + Width / 2;
-                        int centerY = Y + Height / 2;
-                        enemy.Position = new Point(centerX, centerY);
-                    }
-                }
+                    continue;
 
                 Point tilePos = enemy.Position.Value;
                 int tileSize = ConfigManager.tileSize;
@@ -541,6 +625,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 g.FillRectangle(enemyBrush, centerXPixel - size / 2, centerYPixel - size / 2, size, size);
                 g.DrawString(enemy.Type.ToString(), font, Brushes.Black, centerXPixel + 4, centerYPixel + 2);
             }
+
         }
 
         // Draw artifacts on positions
@@ -548,43 +633,22 @@ namespace ProceduralDungeonGenerator.Model.Structure
         {
             using var font = new Font("Arial", 6);
             Brush artifactBrush = Brushes.Blue;
-            int tileSize = ConfigManager.tileSize;
 
             foreach (var artifact in Artifacts)
             {
                 if (artifact.Position == null)
-                {
-                    Random rand = new(artifact.GetHashCode() + ID);
-
-                    if (RoomInteriorTiles != null && RoomInteriorTiles.Count > 0)
-                    {
-                        Point tile = RoomInteriorTiles[rand.Next(RoomInteriorTiles.Count)];
-                        artifact.Position = tile;
-                    }
-                    else
-                    {
-                        // fallback
-                        artifact.Position = new Point(X + Width / 2, Y + Height / 2);
-                    }
-                }
+                    continue;
 
                 Point tilePos = artifact.Position.Value;
-
-                // center of tile
-                int centerX = tilePos.X * tileSize + tileSize / 2;
-                int centerY = tilePos.Y * tileSize + tileSize / 2;
+                int tileSize = ConfigManager.tileSize;
+                int centerXPixel = tilePos.X * tileSize + tileSize / 2;
+                int centerYPixel = tilePos.Y * tileSize + tileSize / 2;
                 int size = 6;
 
-                Point[] trianglePoints = new Point[]
-                {
-                    new Point(centerX, centerY - size / 2),
-                    new Point(centerX - size / 2, centerY + size / 2),
-                    new Point(centerX + size / 2, centerY + size / 2)
-                };
-
-                g.FillPolygon(artifactBrush, trianglePoints);
-                g.DrawString(artifact.Name.ToString(), font, Brushes.Black, centerX + 4, centerY + 2);
+                g.FillRectangle(artifactBrush, centerXPixel - size / 2, centerYPixel - size / 2, size, size);
+                g.DrawString(artifact.Name.ToString(), font, Brushes.Black, centerXPixel + 4, centerYPixel + 2);
             }
+
         }
 
         // Check intersection with other rooms
