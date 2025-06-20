@@ -35,4 +35,4 @@ A Windows Forms app that generates procedural dungeons with support for styles l
 - `config_enemy.csv` – defines enemies per style
 - `config_artifact.csv` – defines artifacts per style
 - `config_item.csv` – defines items per style
-- 
+
