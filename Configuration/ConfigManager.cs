@@ -49,7 +49,7 @@ namespace ProceduralDungeonGenerator.Configuration
         {
             if (!File.Exists(path))
             {
-                Debug.WriteLine("Plik konfiguracji ogólnej nie istnieje.");
+                Debug.WriteLine("Configuration file does not exist.");
                 return;
             }
 
@@ -67,7 +67,7 @@ namespace ProceduralDungeonGenerator.Configuration
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Błąd podczas ładowania konfiguracji ogólnej: {ex.Message}");
+                Debug.WriteLine($"Error while processing configuration file: {ex.Message}");
             }
         }
 

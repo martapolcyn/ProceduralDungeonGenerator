@@ -43,11 +43,10 @@ namespace ProceduralDungeonGenerator.Model.Styles
         {
             var path = new List<Point>();
 
-            // Znajdź najbliższe brzegi obu pokoi
+            // Find closest
             var startTile = corridor.StartRoom.GetClosestBoundaryTileTo(corridor.EndRoom.Center());
             var endTile = corridor.EndRoom.GetClosestBoundaryTileTo(startTile);
 
-            // Najpierw X, potem Y
             int x = startTile.X;
             int y = startTile.Y;
 

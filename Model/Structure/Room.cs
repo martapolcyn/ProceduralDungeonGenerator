@@ -121,7 +121,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             Point position = item.Placement switch
             {
                 PlacementType.Wall => RoomBoundaryTiles[rand.Next(RoomBoundaryTiles.Count)],
-                // PlacementType.CorridorStart => GetCorridorStartPosition(),
+                // TODO: PlacementType.CorridorStart => GetCorridorStartPosition(),
                 PlacementType.Any or _ => RoomInteriorTiles[rand.Next(RoomInteriorTiles.Count)],
             };
 
@@ -183,6 +183,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 .First();
         }
 
+        // Calculate distance between two points
         private double Distance(Point a, Point b)
         {
             int dx = a.X - b.X;
@@ -231,7 +232,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             int[,] map = new int[width, height];
             Random rand = new Random(GetHashCode()); // Seeded for room variation
 
-            // Step 1: Random fill map
+            // Random fill map
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
@@ -239,15 +240,15 @@ namespace ProceduralDungeonGenerator.Model.Structure
                     if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
                         map[x, y] = 1; // Wall boundary
                     else
-                        map[x, y] = rand.NextDouble() < 0.45 ? 1 : 0; // 45% wall
+                        map[x, y] = rand.NextDouble() < 0.45 ? 1 : 0;
                 }
             }
 
-            // Step 2: Smooth map using cellular automata
+            // Smooth map using cellular automata
             for (int i = 0; i < 4; i++)
                 map = SmoothMap(map);
 
-            // Step 3: Convert to tiles
+            // Convert to tiles
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
@@ -349,16 +350,16 @@ namespace ProceduralDungeonGenerator.Model.Structure
             {
                 for (int y = Y; y < Y + Height; y++)
                 {
-                    // Normalizujemy współrzędne do układu elipsy
+                    // Elipse
                     float dx = (x + 0.5f - centerX) / radiusX;
                     float dy = (y + 0.5f - centerY) / radiusY;
 
-                    if (dx * dx + dy * dy <= 1f) // punkt jest wewnątrz elipsy
+                    if (dx * dx + dy * dy <= 1f)
                     {
                         Point tile = new(x, y);
                         RoomInteriorTiles.Add(tile);
 
-                        // Sprawdź, czy to brzeg – sąsiad ma być na zewnątrz
+                        // Check if boundary
                         if (IsBoundaryTile(x, y))
                             RoomBoundaryTiles.Add(tile);
                     }
@@ -382,7 +383,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 float ndy = (ny + 0.5f - centerY) / radiusY;
 
                 if (ndx * ndx + ndy * ndy > 1f)
-                    return true; // sąsiad leży poza elipsą → to brzeg
+                    return true; // Boundary
             }
 
             return false;
@@ -393,11 +394,9 @@ namespace ProceduralDungeonGenerator.Model.Structure
             RoomInteriorTiles = new List<Point>();
             RoomBoundaryTiles = new List<Point>();
 
-            // Wymiary prostokątów składowych
             int armWidth = Width / 2;
             int armHeight = Height / 2;
 
-            // Pozycje
             int verticalX = X;
             int verticalY = Y;
             int verticalWidth = armWidth;
@@ -408,10 +407,8 @@ namespace ProceduralDungeonGenerator.Model.Structure
             int horizontalWidth = Width;
             int horizontalHeight = Height - armHeight;
 
-            // Dodajemy wszystkie tile z pionowego ramienia
             AddTilesFromRect(verticalX, verticalY, verticalWidth, verticalHeight);
 
-            // Dodajemy wszystkie tile z poziomego ramienia (części wspólne nie będą dodane drugi raz)
             AddTilesFromRect(horizontalX, horizontalY, horizontalWidth, horizontalHeight);
         }
 
@@ -468,7 +465,6 @@ namespace ProceduralDungeonGenerator.Model.Structure
 
             string id = ID.ToString();
 
-            // Lewy górny róg pokoju w pikselach
             float textX = X * tileSize;
             float textY = Y * tileSize;
 
@@ -486,7 +482,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             {
                 if (item.Position == null)
                 {
-                    // Wybierz losową kratkę z RoomInteriorTiles
+                    // Random tile from RoomInteriorTiles
                     if (RoomInteriorTiles != null && RoomInteriorTiles.Count > 0)
                     {
                         Random rand = new(item.GetHashCode() + ID);
@@ -529,7 +525,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
                     }
                     else
                     {
-                        // fallback – tile środkowy
+                        // fallback
                         int centerX = X + Width / 2;
                         int centerY = Y + Height / 2;
                         enemy.Position = new Point(centerX, centerY);
@@ -537,7 +533,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 }
 
                 Point tilePos = enemy.Position.Value;
-                int tileSize = ConfigManager.tileSize; // <- dodaj, jeśli masz skalowanie
+                int tileSize = ConfigManager.tileSize;
                 int centerXPixel = tilePos.X * tileSize + tileSize / 2;
                 int centerYPixel = tilePos.Y * tileSize + tileSize / 2;
                 int size = 6;
@@ -567,23 +563,23 @@ namespace ProceduralDungeonGenerator.Model.Structure
                     }
                     else
                     {
-                        // fallback: środek pokoju w tile’ach
+                        // fallback
                         artifact.Position = new Point(X + Width / 2, Y + Height / 2);
                     }
                 }
 
                 Point tilePos = artifact.Position.Value;
 
-                // Przeliczenie środka tile'a na piksele
+                // center of tile
                 int centerX = tilePos.X * tileSize + tileSize / 2;
                 int centerY = tilePos.Y * tileSize + tileSize / 2;
                 int size = 6;
 
                 Point[] trianglePoints = new Point[]
                 {
-            new Point(centerX, centerY - size / 2),
-            new Point(centerX - size / 2, centerY + size / 2),
-            new Point(centerX + size / 2, centerY + size / 2)
+                    new Point(centerX, centerY - size / 2),
+                    new Point(centerX - size / 2, centerY + size / 2),
+                    new Point(centerX + size / 2, centerY + size / 2)
                 };
 
                 g.FillPolygon(artifactBrush, trianglePoints);
