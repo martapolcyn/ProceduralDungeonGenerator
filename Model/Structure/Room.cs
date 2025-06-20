@@ -107,6 +107,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             Items.Add(item);
         }
 
+        // Assign enemies position
         public void AssignEnemyPositions()
         {
             var occupiedTiles = new HashSet<Point>();
@@ -143,6 +144,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             }
         }
 
+        // Assign artifacts position
         public void AssignArtifactPositions()
         {
             var occupiedTiles = new HashSet<Point>();
@@ -185,7 +187,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             }
         }
 
-
+        // Assign item position
         public void AssignItemPosition(Item item)
         {
             Random rand = new(item.GetHashCode() + ID);
@@ -227,7 +229,6 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 item.Position = candidateTiles[rand.Next(candidateTiles.Count)];
             }
         }
-
 
         // Room width and height in tiles based on room size and dungeon size
         private (int, int) GetRoomSize(RoomSize size)
@@ -326,6 +327,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             }
         }
 
+        // Cave shape - cellural automata
         private void GenerateCaveTiles()
         {
             int width = Width;
@@ -349,7 +351,9 @@ namespace ProceduralDungeonGenerator.Model.Structure
             for (int i = 0; i < 4; i++)
                 map = SmoothMap(map);
 
-            // Convert to tiles
+            RoomInteriorTiles = new List<Point>();
+            RoomBoundaryTiles = new List<Point>();
+
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
@@ -359,9 +363,16 @@ namespace ProceduralDungeonGenerator.Model.Structure
                     Point tile = new(globalX, globalY);
 
                     if (map[x, y] == 0)
+                    {
+                        // Floor
                         RoomInteriorTiles.Add(tile);
-                    else if (IsAdjacentToFloor(map, x, y))
-                        RoomBoundaryTiles.Add(tile);
+
+                        // Floor next to wall
+                        if (IsAdjacentToWall(map, x, y))
+                        {
+                            RoomBoundaryTiles.Add(tile);
+                        }
+                    }
                 }
             }
         }
@@ -401,25 +412,28 @@ namespace ProceduralDungeonGenerator.Model.Structure
             return wallCount;
         }
 
-        private bool IsAdjacentToFloor(int[,] map, int x, int y)
+        private bool IsAdjacentToWall(int[,] map, int x, int y)
         {
-            for (int dx = -1; dx <= 1; dx++)
-            {
-                for (int dy = -1; dy <= 1; dy++)
-                {
-                    int nx = x + dx;
-                    int ny = y + dy;
+            int width = map.GetLength(0);
+            int height = map.GetLength(1);
 
-                    if (nx >= 0 && ny >= 0 && nx < map.GetLength(0) && ny < map.GetLength(1))
-                    {
-                        if (map[nx, ny] == 0)
-                            return true;
-                    }
+            int[,] directions = new int[,] { { 0, -1 }, { 0, 1 }, { -1, 0 }, { 1, 0 } };
+
+            for (int i = 0; i < 4; i++)
+            {
+                int nx = x + directions[i, 0];
+                int ny = y + directions[i, 1];
+
+                if (nx >= 0 && ny >= 0 && nx < width && ny < height)
+                {
+                    if (map[nx, ny] == 1)
+                        return true;
                 }
             }
             return false;
         }
 
+        // Rectangular room interior and boundary tiles
         private void GenerateRectangularTiles()
         {
             int height = Shape == RoomShape.Square ? Width : Height;
@@ -438,6 +452,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             }
         }
 
+        // Eliptical room interior and boundary tiles
         private void GenerateCircularTiles()
         {
             float centerX = X + Width / 2f;
@@ -466,6 +481,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             }
         }
 
+        // Chec if tile is a boundary tile
         private bool IsBoundaryTile(int x, int y)
         {
             foreach ((int dx, int dy) in new[] { (-1, 0), (1, 0), (0, -1), (0, 1) })
@@ -488,6 +504,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             return false;
         }
 
+        // L Shaped room interior and boundary tiles
         private void GenerateLShapedTiles()
         {
             RoomInteriorTiles = new List<Point>();
@@ -511,6 +528,7 @@ namespace ProceduralDungeonGenerator.Model.Structure
             AddTilesFromRect(horizontalX, horizontalY, horizontalWidth, horizontalHeight);
         }
 
+        // Helper function for L shape
         private void AddTilesFromRect(int startX, int startY, int width, int height)
         {
             for (int x = startX; x < startX + width; x++)
