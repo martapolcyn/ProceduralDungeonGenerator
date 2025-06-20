@@ -53,6 +53,8 @@ namespace ProceduralDungeonGenerator.Model.Structure
 
             foreach (var room in rooms)
             {
+                room.AssignEnemyPositions();
+                room.AssignArtifactPositions();
                 Furnish(room);
                 Logger.Log($"Furnished: {room}");
             }
@@ -83,35 +85,11 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 }
                 else
                 {
-                    Logger.Log($"Nie znaleziono ścieżki dla korytarza {corridor.StartRoom.ID} -> {corridor.EndRoom.ID}");
+                    Logger.Log($"Path not found: {corridor.StartRoom.ID} -> {corridor.EndRoom.ID}");
                 }
             }
 
         }
-
-
-
-        // returns neighboring tiles
-        private IEnumerable<Point> GetNeighbors(Point p)
-        {
-            var deltas = new[]
-            {
-        new Point(1, 0), new Point(-1, 0),
-        new Point(0, 1), new Point(0, -1)
-    };
-
-            foreach (var delta in deltas)
-            {
-                var np = new Point(p.X + delta.X, p.Y + delta.Y);
-
-                if (np.X >= 0 && np.X < ConfigManager.gridWidth &&
-                    np.Y >= 0 && np.Y < ConfigManager.gridHeight)
-                {
-                    yield return np;
-                }
-            }
-        }
-
 
         // Generates list of room objects
         private void GenerateRooms()
@@ -132,7 +110,6 @@ namespace ProceduralDungeonGenerator.Model.Structure
                 }
             }
         }
-
 
         // Generates list of corridor objects
         private void GenerateCorridors()
